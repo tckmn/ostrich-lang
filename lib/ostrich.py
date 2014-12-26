@@ -4,10 +4,9 @@ from collections import defaultdict
 import re
 
 # utility methods and constants
-def Enum(**enums):
-    return type('Enum', (), enums)
-
 NULLRE = re.compile('')
+def Enum(**enums): return type('Enum', (), enums)
+
 
 class Ostrich:
     # to differentiate blocks and strings
@@ -75,7 +74,7 @@ class Ostrich:
             del self[-n:]
             return xs
 
-        # pop by precedence: take last n elements and order as specified in TYPES
+        # pop by precedence: take last n elements, order as specified in TYPES
         def pprec(self, n):
             return OS.byprec(self.popn(n))
 
@@ -107,23 +106,23 @@ class Ostrich:
             return OST.STRING
         INSTRUCTIONS['"'] = quote
 
-        # #
+        # TODO #
 
-        # $
+        # TODO $
 
-        # %
+        # TODO %
 
-        # &
+        # TODO &
 
         def inspect(self, stk, state):
             stk.append(OS.inspect(stk.pop()))
         INSTRUCTIONS['\''] = inspect
 
-        # (
+        # TODO (
 
-        # )
+        # TODO )
 
-        # *
+        # TODO *
 
         def plus(self, stk, state):
             a, b = stk.popn(2)
@@ -140,8 +139,9 @@ class Ostrich:
                 stk.append(a + b)
         INSTRUCTIONS['+'] = plus
 
-        # ,
+        # TODO ,
 
+        # TODO
         def minus(self, stk, state):
             a, b = stk.popn(2)
             ptype = OS.typeof(OS.byprec([a, b])[0])
@@ -161,7 +161,7 @@ class Ostrich:
             stk.append(stk[-1])
         INSTRUCTIONS['.'] = duplicate
 
-        # /
+        # TODO /
 
         def num(self, stk, state):
             if state == OST.NUMBER:
@@ -171,7 +171,6 @@ class Ostrich:
             return OST.NUMBER
         for instr in '0123456789': INSTRUCTIONS[instr] = num
 
-        # :
         def assign(self, stk, state):
             return OS.XSTATE.ASSIGN
         INSTRUCTIONS[':'] = assign
@@ -180,13 +179,13 @@ class Ostrich:
             stk.pop()
         INSTRUCTIONS[';'] = pop
 
-        # <
+        # TODO <
 
-        # =
+        # TODO =
 
-        # >
+        # TODO >
 
-        # ?
+        # TODO ?
 
         def roll(self, stk, state):
             count = stk.pop()
@@ -195,7 +194,7 @@ class Ostrich:
             stk.append(xs[0])
         INSTRUCTIONS['@'] = roll
 
-        # A-Z
+        # TODO A-Z
 
         def leftbracket(self, stk, state):
             return OST.ARRAY
@@ -209,27 +208,29 @@ class Ostrich:
             return -OST.ARRAY
         INSTRUCTIONS[']'] = rightbracket
 
-        # ^
+        # TODO ^
 
-        # _
+        # TODO _
 
         def backtick(self, stk, state):
             return OST.REGEXP
         INSTRUCTIONS['`'] = backtick
 
-        # a-z
+        # TODO a-z
 
         def leftcurlybracket(self, stk, state):
             return OST.BLOCK
         INSTRUCTIONS['{'] = leftcurlybracket
 
-        # |
+        # TODO |
 
         # this normally isn't called unless there are unmatched brackets
         # block parsing is done within Ostrich#run
         def rightcurlybracket(self, stk, state):
             return -OST.BLOCK
         INSTRUCTIONS['}'] = rightcurlybracket
+
+        # TODO ~
 
         return INSTRUCTIONS
 
@@ -241,10 +242,12 @@ class Ostrich:
 
     def run(self, code):
         state = None
-        cumulstr = '' # string, regexp, block
-        nestcount = 1 # block
-        markers = [] # array
+        cumulstr = ''  # string, regexp, block
+        nestcount = 1  # block
+        markers = []   # array
+
         for instr in code:
+
             if state == OST.STRING:
                 if instr == '"':
                     self.stack.append(cumulstr)
@@ -252,6 +255,7 @@ class Ostrich:
                     state = None
                 else:
                     cumulstr += instr
+
             elif state == OST.REGEXP:
                 if instr == '`':
                     self.stack.append(re.compile(cumulstr))
@@ -259,13 +263,14 @@ class Ostrich:
                     state = None
                 else:
                     cumulstr += instr
+
             elif state == OST.BLOCK:
                 if instr == '}':
                     nestcount -= 1
                     if nestcount == 0:
                         self.stack.append(Ostrich.Block(cumulstr))
                         cumulstr = ''
-                        nestcount = 1 # reset for next time
+                        nestcount = 1  # reset for next time
                         state = None
                     else:
                         cumulstr += instr
@@ -273,9 +278,11 @@ class Ostrich:
                     cumulstr += instr
                     if instr == '{':
                         nestcount += 1
+
             elif state == OS.XSTATE.ASSIGN:
                 self.variables[instr] = self.stack[-1]
                 state = None
+
             else:
                 state = Ostrich.INSTRUCTIONS[instr](instr, self.stack, state)
                 if state == OST.ARRAY:
@@ -287,14 +294,23 @@ class Ostrich:
                     x = self.variables[state[len(OS.XSTATE.RETRIEVE):]]
                     if x:
                         self.stack.append(x)
-                        #TODO execute if block
+                        if OS.typeof(x) == OST.BLOCK:
+                            # TODO execute if block
+                            pass
+
+        # finished parsing instr's
+        # perform final cleanup
+
         if state == OST.STRING:
             self.stack.append(cumulstr)
         elif state == OST.REGEXP:
             self.stack.append(re.compile(cumulstr))
         elif state == OST.BLOCK:
             self.stack.append(Ostrich.Block(cumulstr))
-        while markers: self.stack.append(self.stack.popn(-markers.pop()))
+
+        while markers:
+            self.stack.append(self.stack.popn(-markers.pop()))
+
         return ' '.join(map(OS.inspect, self.stack))
 
 # just for convenience
@@ -328,7 +344,7 @@ if __name__ == '__main__':
             # R
             try:
                 code = input('>>> ')
-            except EOFError:
+            except (EOFError, KeyboardInterrupt):
                 sys.exit('')
             # E
             rtn = program.run(code)
