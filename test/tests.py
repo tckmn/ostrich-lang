@@ -38,6 +38,9 @@ class OstrichTests(unittest.TestCase):
         self.expect(';"', '""')
         # TODO escaping (not implemented)
 
+    def test_dollar(self):
+        pass  # TODO
+
     def test_inspect(self):
         pass  # TODO
 

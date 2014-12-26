@@ -62,7 +62,7 @@ class Ostrich:
             if xt == OST.BLOCK:
                 return '{%s}' % x
             if xt == OST.REGEXP:
-                return '`%s`' % x.pattern
+                return '`%s`' % OS.tostr(x)
             if xt == OST.STRING:
                 return '"%s"' % x
             if xt == OST.NUMBER:
@@ -108,7 +108,20 @@ class Ostrich:
 
         # TODO #
 
-        # TODO $
+        def dollar(self, stk, state):
+            x = stk.pop()
+            xt = OS.typeof(x)
+            if xt == OST.ARRAY:
+                stk.push(sorted(x))
+            if xt == OST.STRING:
+                stk.push(''.join(sorted(x)))
+            if xt == OST.BLOCK:
+                pass  # TODO sort by
+            if xt == OST.REGEXP:
+                stk.push(re.compile(''.join(sorted(OS.tostr(x)))))
+            if xt == OST.NUMBER:
+                pass  # TODO stack nth
+        INSTRUCTIONS['$'] = dollar
 
         # TODO %
 
@@ -163,27 +176,32 @@ class Ostrich:
             if xt in [OST.ARRAY, OST.STRING]:
                 stk.append(len(x))
             if xt == OST.REGEXP:
-                stk.append(len(x.pattern))
+                stk.append(len(OS.tostr(x)))
             if xt == OST.BLOCK:
                 pass  # TODO select
             if xt == OST.NUMBER:
-                stk.append(list(range(x))
+                stk.append(list(range(x)))
         INSTRUCTIONS[','] = comma
 
-        # TODO (this is just plus copy/pasted)
         def minus(self, stk, state):
             a, b = stk.popn(2)
             ptype = OS.typeof(OS.byprec([a, b])[0])
             if ptype == OST.ARRAY:
-                stk.append(OS.convert(a, OST.ARRAY) + OS.convert(b, OST.ARRAY))
+                a1 = OS.convert(a, OST.ARRAY)
+                a2 = OS.convert(b, OST.ARRAY)
+                stk.append([x for x in a1 if x not in a2])
             elif ptype == OST.BLOCK:
-                stk.append(Ostrich.Block(OS.tostr(a) + OS.tostr(b)))
+                pass  # TODO ???
             elif ptype == OST.REGEXP:
-                stk.append(re.compile(OS.tostr(a) + OS.tostr(b)))
+                r1 = OS.tostr(a)
+                r2 = OS.tostr(b)
+                stk.append(re.compile(''.join([c for c in r1 if c not in r2])))
             elif ptype == OST.STRING:
-                stk.append(OS.tostr(a) + OS.tostr(b))
+                s1 = OS.tostr(a)
+                s2 = OS.tostr(b)
+                stk.append(''.join([c for c in s1 if c not in s2]))
             elif ptype == OST.NUMBER:
-                stk.append(a + b)
+                stk.append(a - b)
         INSTRUCTIONS['-'] = minus
 
         def duplicate(self, stk, state):
