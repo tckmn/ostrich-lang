@@ -41,6 +41,9 @@ class OstrichTests(unittest.TestCase):
     def test_dollar(self):
         pass  # TODO
 
+    def test_mod(self):
+        pass  # TODO
+
     def test_inspect(self):
         pass  # TODO
 
@@ -48,6 +51,9 @@ class OstrichTests(unittest.TestCase):
         pass  # TODO
 
     def test_rightparen(self):
+        pass  # TODO
+
+    def test_times(self):
         pass  # TODO
 
     def test_plus(self):
@@ -60,6 +66,9 @@ class OstrichTests(unittest.TestCase):
         pass  # TODO
 
     def test_duplicate(self):
+        pass  # TODO
+
+    def test_div(self):
         pass  # TODO
 
     def test_num(self):

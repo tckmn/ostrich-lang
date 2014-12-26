@@ -1,2 +1,5 @@
 # Vim
 .*.sw?
+
+# Python
+__pycache__

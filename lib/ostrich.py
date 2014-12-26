@@ -123,7 +123,23 @@ class Ostrich:
                 pass  # TODO stack nth
         INSTRUCTIONS['$'] = dollar
 
-        # TODO %
+        def mod(self, stk, state):
+            a, b = stk.popn(2)
+            ptype, stype = map(OS.typeof, OS.byprec([a, b]))
+            if ptype == OST.ARRAY:
+                pass  # TODO
+            elif ptype == OST.BLOCK:
+                pass  # TODO
+            elif ptype == OST.REGEXP:
+                pass  # TODO
+            elif ptype == OST.STRING:
+                if stype == OST.NUMBER:
+                    pass  # TODO str[::x]
+                else:
+                    pass  # TODO product
+            elif ptype == OST.NUMBER:
+                stk.append(a % b)
+        INSTRUCTIONS['%'] = mod
 
         # TODO &
 
@@ -153,7 +169,23 @@ class Ostrich:
                 stk.append(x + 1)
         INSTRUCTIONS['('] = rightparen
 
-        # TODO *
+        def times(self, stk, state):
+            a, b = stk.popn(2)
+            ptype, stype = map(OS.typeof, OS.byprec([a, b]))
+            if ptype == OST.ARRAY:
+                pass  # TODO
+            elif ptype == OST.BLOCK:
+                pass  # TODO
+            elif ptype == OST.REGEXP:
+                pass  # TODO
+            elif ptype == OST.STRING:
+                if stype == OST.NUMBER:
+                    stk.append(a*b if OS.typeof(a) == ptype else b*a)
+                else:
+                    stk.append(b.join(list(a)))
+            elif ptype == OST.NUMBER:
+                stk.append(a * b)
+        INSTRUCTIONS['*'] = times
 
         def plus(self, stk, state):
             a, b = stk.popn(2)
@@ -208,7 +240,20 @@ class Ostrich:
             stk.append(stk[-1])
         INSTRUCTIONS['.'] = duplicate
 
-        # TODO /
+        def div(self, stk, state):
+            a, b = stk.popn(2)
+            ptype = OS.typeof(OS.byprec([a, b])[0])
+            if ptype == OST.ARRAY:
+                pass  # TODO
+            elif ptype == OST.BLOCK:
+                pass  # TODO
+            elif ptype == OST.REGEXP:
+                pass  # TODO
+            elif ptype == OST.STRING:
+                stk.append(a.split(OS.tostr(b)))
+            elif ptype == OST.NUMBER:
+                stk.append(a / b)
+        INSTRUCTIONS['/'] = div
 
         def num(self, stk, state):
             if state == OST.NUMBER:
