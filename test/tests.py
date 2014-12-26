@@ -41,7 +41,16 @@ class OstrichTests(unittest.TestCase):
     def test_inspect(self):
         pass  # TODO
 
+    def test_leftparen(self):
+        pass  # TODO
+
+    def test_rightparen(self):
+        pass  # TODO
+
     def test_plus(self):
+        pass  # TODO
+
+    def test_comma(self):
         pass  # TODO
 
     def test_minus(self):
@@ -84,6 +93,9 @@ class OstrichTests(unittest.TestCase):
         pass  # TODO
 
     def test_rightcurlybracket(self):
+        pass  # TODO
+
+    def test_tilde(self):
         pass  # TODO
 
 if __name__ == '__main__':

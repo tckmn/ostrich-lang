@@ -118,9 +118,27 @@ class Ostrich:
             stk.append(OS.inspect(stk.pop()))
         INSTRUCTIONS['\''] = inspect
 
-        # TODO (
+        def leftparen(self, stk, state):
+            x = stk.pop()
+            xt = OS.typeof(x)
+            if xt in [OST.ARRAY, OST.REGEXP, OST.STRING]:
+                pass  # TODO uncons
+            if xt == OST.BLOCK:
+                pass  # TODO ???
+            if xt == OST.NUMBER:
+                stk.append(x - 1)
+        INSTRUCTIONS['('] = leftparen
 
-        # TODO )
+        def rightparen(self, stk, state):
+            x = stk.pop()
+            xt = OS.typeof(x)
+            if xt in [OST.ARRAY, OST.REGEXP, OST.STRING]:
+                pass  # TODO right-uncons
+            if xt == OST.BLOCK:
+                pass  # TODO ???
+            if xt == OST.NUMBER:
+                stk.append(x + 1)
+        INSTRUCTIONS['('] = rightparen
 
         # TODO *
 
@@ -139,9 +157,20 @@ class Ostrich:
                 stk.append(a + b)
         INSTRUCTIONS['+'] = plus
 
-        # TODO ,
+        def comma(self, stk, state):
+            x = stk.pop()
+            xt = OS.typeof(x)
+            if xt in [OST.ARRAY, OST.STRING]:
+                stk.append(len(x))
+            if xt == OST.REGEXP:
+                stk.append(len(x.pattern))
+            if xt == OST.BLOCK:
+                pass  # TODO select
+            if xt == OST.NUMBER:
+                stk.append(list(range(x))
+        INSTRUCTIONS[','] = comma
 
-        # TODO
+        # TODO (this is just plus copy/pasted)
         def minus(self, stk, state):
             a, b = stk.popn(2)
             ptype = OS.typeof(OS.byprec([a, b])[0])
@@ -230,7 +259,19 @@ class Ostrich:
             return -OST.BLOCK
         INSTRUCTIONS['}'] = rightcurlybracket
 
-        # TODO ~
+        def tilde(self, stk, state):
+            x = stk.pop()
+            xt = OS.typeof(x)
+            if xt == OST.ARRAY:
+                pass  # TODO dump
+            if xt == OST.BLOCK:
+                pass  # TODO eval
+            if xt == OST.REGEXP:
+                pass  # TODO eval
+            if xt == OST.STRING:
+                pass  # TODO eval
+            if xt == OST.NUMBER:
+                stk.append(-x)
 
         return INSTRUCTIONS
 
