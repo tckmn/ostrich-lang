@@ -12,12 +12,79 @@ class OstrichTests(unittest.TestCase):
     def setUp(self):
         self.program = ostrich.Ostrich()
 
+    def expect(self, code, result):
+        self.assertEqual(self.program.run(code), result)
+
     def test_whitespace(self):
-        self.assertEqual(self.program.run('   \n  \n\n'), '')
+        self.expect('   \n  \n\n', '')
 
     def test_negate(self):
-        self.assertEqual(self.program.run('42!'), '0')
-        self.assertEqual(self.program.run(';0!'), '1')
+        self.expect('42!', '0')
+        self.expect(';0!', '1')
+
+        for delims in [('"', '"'), ('`', '`'), ('{', '}')]:
+            self.expect(';%sfoo%s!' % delims, '0')
+            self.expect(';%s %s!'   % delims, '0')
+            self.expect(';%s%s!'    % delims, '1')
+
+        # TODO arrays (not implemented yet)
+
+    def test_quote(self):
+        self.expect('"foo"', '"foo"')
+        self.expect(';" "', '" "')
+        self.expect(';""', '""')
+
+        self.expect(';"foo', '"foo"')
+        self.expect(';"', '""')
+        # TODO escaping (not implemented)
+
+    def test_inspect(self):
+        pass  # TODO
+
+    def test_plus(self):
+        pass  # TODO
+
+    def test_minus(self):
+        pass  # TODO
+
+    def test_duplicate(self):
+        pass  # TODO
+
+    def test_num(self):
+        pass  # TODO
+
+    def test_assign(self):
+        pass  # TODO
+
+    def test_pop(self):
+        pass  # TODO
+
+    def test_roll(self):
+        pass  # TODO
+
+    def test_leftbracket(self):
+        pass  # TODO
+
+    def test_swaptwo(self):
+        pass  # TODO
+
+    def test_rightbracket(self):
+        pass  # TODO
+
+    def test_backtick(self):
+        self.expect('`foo`', '`foo`')
+        self.expect(';` `', '` `')
+        self.expect(';``', '``')
+
+        self.expect(';`foo', '`foo`')
+        self.expect(';`', '``')
+        # TODO escaping (not implemented)
+
+    def test_leftcurlybracket(self):
+        pass  # TODO
+
+    def test_rightcurlybracket(self):
+        pass  # TODO
 
 if __name__ == '__main__':
     unittest.main()
