@@ -19,7 +19,7 @@ class Ostrich:
         # all Ostrich types; also used for state management
         TYPES = Enum(NUMBER=0, STRING=1, BLOCK=2, ARRAY=3)
         # extra states (used for :, etc.)
-        XSTATE = Enum(ASSIGN='_XASGN', RETRIEVE='_XRETR', EVAL='_XEVAL')
+        XSTATE = Enum(ASSIGN='_XASGN', RETRIEVE='_XRETR')
 
         def typeof(x):
             xt = type(x)
@@ -79,19 +79,19 @@ class Ostrich:
 
     def initialize_instructions():
         def unknowninstr():
-            def unknowninstr_inner(self, stk, state):
+            def unknowninstr_inner(self, stk, prgm):
                 return OS.XSTATE.RETRIEVE + self
             return unknowninstr_inner
         INSTRUCTIONS = defaultdict(unknowninstr)
 
         # TODO things not in GS: A-Za-z_#
 
-        def whitespace(self, stk, state):
+        def whitespace(self, stk, prgm):
             pass
         INSTRUCTIONS['\n'] = whitespace
         INSTRUCTIONS[' '] = whitespace
 
-        def negate(self, stk, state):
+        def negate(self, stk, prgm):
             x = stk.pop()
             if x in [0, '', Ostrich.Block(''), []]:
                 stk.append(1)
@@ -99,11 +99,11 @@ class Ostrich:
                 stk.append(0)
         INSTRUCTIONS['!'] = negate
 
-        def quote(self, stk, state):
+        def quote(self, stk, prgm):
             pass  # TODO
         INSTRUCTIONS['"'] = quote
 
-        def dollar(self, stk, state):
+        def dollar(self, stk, prgm):
             x = stk.pop()
             xt = OS.typeof(x)
             if xt == OST.ARRAY:
@@ -116,7 +116,7 @@ class Ostrich:
                 stk.push(stk[-x])
         INSTRUCTIONS['$'] = dollar
 
-        def mod(self, stk, state):
+        def mod(self, stk, prgm):
             a, b = stk.popn(2)
             ptype, stype = map(OS.typeof, OS.byprec([a, b]))
             if ptype == OST.ARRAY:
@@ -132,7 +132,7 @@ class Ostrich:
                 stk.append(a % b)
         INSTRUCTIONS['%'] = mod
 
-        def bitand(self, stk, state):
+        def bitand(self, stk, prgm):
             a, b = stk.popn(2)
             ptype = OS.typeof(OS.byprec([a, b])[0])
 
@@ -155,11 +155,11 @@ class Ostrich:
                 stk.append(a & b)
         INSTRUCTIONS['&'] = bitand
 
-        def inspect(self, stk, state):
+        def inspect(self, stk, prgm):
             stk.append(OS.inspect(stk.pop()))
         INSTRUCTIONS['\''] = inspect
 
-        def leftparen(self, stk, state):
+        def leftparen(self, stk, prgm):
             x = stk.pop()
             xt = OS.typeof(x)
             if xt in [OST.ARRAY, OST.STRING]:
@@ -171,7 +171,7 @@ class Ostrich:
                 stk.append(x - 1)
         INSTRUCTIONS['('] = leftparen
 
-        def rightparen(self, stk, state):
+        def rightparen(self, stk, prgm):
             x = stk.pop()
             xt = OS.typeof(x)
             if xt in [OST.ARRAY, OST.STRING]:
@@ -183,7 +183,7 @@ class Ostrich:
                 stk.append(x + 1)
         INSTRUCTIONS[')'] = rightparen
 
-        def times(self, stk, state):
+        def times(self, stk, prgm):
             a, b = stk.popn(2)
             p, s = OS.byprec([a, b])
             ptype, stype = map(OS.typeof, [p, s])
@@ -200,8 +200,8 @@ class Ostrich:
                     stk.append(joined)
             elif ptype == OST.BLOCK:
                 if stype == OST.NUMBER:
-                    stk.append(Ostrich.Block((OS.inspect(p) + '~') * s))
-                    return OS.XSTATE.EVAL
+                    for _ in range(s):
+                        prgm.run(p)
                 elif stype == OST.STRING:
                     pass  # TODO fold
                 else:
@@ -215,7 +215,7 @@ class Ostrich:
                 stk.append(a * b)
         INSTRUCTIONS['*'] = times
 
-        def plus(self, stk, state):
+        def plus(self, stk, prgm):
             a, b = stk.popn(2)
             ptype = OS.typeof(OS.byprec([a, b])[0])
             if ptype == OST.ARRAY:
@@ -228,7 +228,7 @@ class Ostrich:
                 stk.append(a + b)
         INSTRUCTIONS['+'] = plus
 
-        def comma(self, stk, state):
+        def comma(self, stk, prgm):
             x = stk.pop()
             xt = OS.typeof(x)
             if xt in [OST.ARRAY, OST.STRING]:
@@ -239,7 +239,7 @@ class Ostrich:
                 stk.append(list(range(x)))
         INSTRUCTIONS[','] = comma
 
-        def minus(self, stk, state):
+        def minus(self, stk, prgm):
             a, b = stk.popn(2)
             ptype = OS.typeof(OS.byprec([a, b])[0])
 
@@ -259,11 +259,11 @@ class Ostrich:
                 stk.append(a - b)
         INSTRUCTIONS['-'] = minus
 
-        def duplicate(self, stk, state):
+        def duplicate(self, stk, prgm):
             if stk: stk.append(stk[-1])
         INSTRUCTIONS['.'] = duplicate
 
-        def div(self, stk, state):
+        def div(self, stk, prgm):
             a, b = stk.popn(2)
             p, s = OS.byprec([a, b])
             ptype, stype = map(OS.typeof, [p, s])
@@ -291,58 +291,58 @@ class Ostrich:
                 stk.append(a / b)
         INSTRUCTIONS['/'] = div
 
-        def num(self, stk, state):
-            if state == OST.NUMBER:
+        def num(self, stk, prgm):
+            if prgm.state == OST.NUMBER:
                 stk[-1] = int(str(stk[-1]) + self)
             else:
                 stk.append(int(self))
             return OST.NUMBER
         for instr in '0123456789': INSTRUCTIONS[instr] = num
 
-        def assign(self, stk, state):
+        def assign(self, stk, prgm):
             return OS.XSTATE.ASSIGN
         INSTRUCTIONS[':'] = assign
 
-        def pop(self, stk, state):
+        def pop(self, stk, prgm):
             if stk: stk.pop()
         INSTRUCTIONS[';'] = pop
 
-        def lt(self, stk, state):
+        def lt(self, stk, prgm):
             pass  # TODO
         INSTRUCTIONS['<'] = lt
 
-        def eq(self, stk, state):
+        def eq(self, stk, prgm):
             pass  # TODO
         INSTRUCTIONS['='] = eq
 
-        def gt(self, stk, state):
+        def gt(self, stk, prgm):
             pass  # TODO
         INSTRUCTIONS['>'] = gt
 
-        def question(self, stk, state):
+        def question(self, stk, prgm):
             pass  # TODO
         INSTRUCTIONS['?'] = question
 
-        def roll(self, stk, state):
+        def roll(self, stk, prgm):
             count = stk.pop()
             xs = stk.popn(count)
             stk.extend(xs[1:])
             stk.append(xs[0])
         INSTRUCTIONS['@'] = roll
 
-        def leftbracket(self, stk, state):
+        def leftbracket(self, stk, prgm):
             return OST.ARRAY
         INSTRUCTIONS['['] = leftbracket
 
-        def swaptwo(self, stk, state):
+        def swaptwo(self, stk, prgm):
             stk.extend([stk.pop(), stk.pop()])
         INSTRUCTIONS['\\'] = swaptwo
 
-        def rightbracket(self, stk, state):
+        def rightbracket(self, stk, prgm):
             return -OST.ARRAY
         INSTRUCTIONS[']'] = rightbracket
 
-        def bitxor(self, stk, state):
+        def bitxor(self, stk, prgm):
             a, b = stk.popn(2)
             ptype = OS.typeof(OS.byprec([a, b])[0])
 
@@ -368,15 +368,15 @@ class Ostrich:
                 stk.append(a ^ b)
         INSTRUCTIONS['^'] = bitxor
 
-        def backtick(self, stk, state):
+        def backtick(self, stk, prgm):
             return OST.STRING
         INSTRUCTIONS['`'] = backtick
 
-        def leftcurlybracket(self, stk, state):
+        def leftcurlybracket(self, stk, prgm):
             return OST.BLOCK
         INSTRUCTIONS['{'] = leftcurlybracket
 
-        def bitor(self, stk, state):
+        def bitor(self, stk, prgm):
             a, b = stk.popn(2)
             ptype = OS.typeof(OS.byprec([a, b])[0])
 
@@ -400,21 +400,19 @@ class Ostrich:
 
         # this normally isn't called unless there are unmatched brackets
         # block parsing is done within Ostrich#run
-        def rightcurlybracket(self, stk, state):
+        def rightcurlybracket(self, stk, prgm):
             return -OST.BLOCK
         INSTRUCTIONS['}'] = rightcurlybracket
 
-        def tilde(self, stk, state):
+        def tilde(self, stk, prgm):
             x = stk.pop()
             xt = OS.typeof(x)
             if xt == OST.ARRAY:
                 stk.extend(x)
             if xt == OST.BLOCK:
-                stk.append(x)
-                return OS.XSTATE.EVAL
+                prgm.run(x)
             if xt == OST.STRING:
-                stk.append(x)
-                return OS.XSTATE.EVAL
+                prgm.run(x)
             if xt == OST.NUMBER:
                 stk.append(-x)
         INSTRUCTIONS['~'] = tilde
@@ -426,9 +424,10 @@ class Ostrich:
     def __init__(self):
         self.stack = OS()
         self.variables = defaultdict(lambda: None)
+        self.state = None
 
     def run(self, code):
-        state = None
+        self.state = None
         cumulstr = ''  # string, block
         nestcount = 1  # block
         markers = []   # array
@@ -438,22 +437,22 @@ class Ostrich:
             instr = code[0]
             code = code[1:]
 
-            if state == OST.STRING:
+            if self.state == OST.STRING:
                 if instr == '`':
                     self.stack.append(cumulstr)
                     cumulstr = ''
-                    state = None
+                    self.state = None
                 else:
                     cumulstr += instr
 
-            elif state == OST.BLOCK:
+            elif self.state == OST.BLOCK:
                 if instr == '}':
                     nestcount -= 1
                     if nestcount == 0:
                         self.stack.append(Ostrich.Block(cumulstr))
                         cumulstr = ''
                         nestcount = 1  # reset for next time
-                        state = None
+                        self.state = None
                     else:
                         cumulstr += instr
                 else:
@@ -461,35 +460,33 @@ class Ostrich:
                     if instr == '{':
                         nestcount += 1
 
-            elif state == OS.XSTATE.ASSIGN:
+            elif self.state == OS.XSTATE.ASSIGN:
                 self.variables[instr] = self.stack[-1]
-                state = None
+                self.state = None
 
             else:
-                state = Ostrich.INSTRUCTIONS[instr](instr, self.stack, state)
-                if state == OST.ARRAY:
+                self.state = Ostrich.INSTRUCTIONS[instr](instr, self.stack, self)
+                if self.state == OST.ARRAY:
                     markers.append(len(self.stack))
-                elif state == -OST.ARRAY:
+                elif self.state == -OST.ARRAY:
                     idx = markers.pop() if markers else 0
                     self.stack.append(self.stack.popn(-idx))
-                elif type(state) is str and state.startswith(OS.XSTATE.RETRIEVE):
-                    x = self.variables[state[len(OS.XSTATE.RETRIEVE):]]
+                elif type(self.state) is str and self.state.startswith(OS.XSTATE.RETRIEVE):
+                    x = self.variables[self.state[len(OS.XSTATE.RETRIEVE):]]
                     if x:
                         if OS.typeof(x) == OST.BLOCK:
                             code = x + code
                         else:
                             self.stack.append(x)
-                elif state == OS.XSTATE.EVAL:
-                    code = self.stack.pop() + code
-                    state = None
 
         # finished parsing instr's
         # perform final cleanup
 
-        if state == OST.STRING:
+        if self.state == OST.STRING:
             self.stack.append(cumulstr)
-        elif state == OST.BLOCK:
+        elif self.state == OST.BLOCK:
             self.stack.append(Ostrich.Block(cumulstr))
+        self.state = None
 
         while markers:
             self.stack.append(self.stack.popn(-markers.pop()))
