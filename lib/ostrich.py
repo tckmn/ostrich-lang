@@ -185,14 +185,30 @@ class Ostrich:
 
         def times(self, stk, state):
             a, b = stk.popn(2)
-            ptype, stype = map(OS.typeof, OS.byprec([a, b]))
+            p, s = OS.byprec([a, b])
+            ptype, stype = map(OS.typeof, [p, s])
             if ptype == OST.ARRAY:
-                pass  # TODO
+                if stype == OST.NUMBER:
+                    stk.append(p * s)
+                elif stype == OST.STRING:
+                    stk.append(s.join(map(OS.inspect, p)))
+                elif stype == OST.BLOCK:
+                    pass  # TODO fold
+                else:
+                    joined = [a[0]]
+                    for el in a[1:]: joined.extend(b + [el])
+                    stk.append(joined)
             elif ptype == OST.BLOCK:
-                pass  # TODO
+                if stype == OST.NUMBER:
+                    stk.append(Ostrich.Block((OS.inspect(p) + '~') * s))
+                    return OS.XSTATE.EVAL
+                elif stype == OST.STRING:
+                    pass  # TODO fold
+                else:
+                    pass  # TODO block*block (???)
             elif ptype == OST.STRING:
                 if stype == OST.NUMBER:
-                    stk.append(a*b if OS.typeof(a) == ptype else b*a)
+                    stk.append(p * s)
                 else:
                     stk.append(b.join(list(a)))
             elif ptype == OST.NUMBER:
@@ -249,13 +265,21 @@ class Ostrich:
 
         def div(self, stk, state):
             a, b = stk.popn(2)
-            ptype = OS.typeof(OS.byprec([a, b])[0])
+            p, s = OS.byprec([a, b])
+            ptype, stype = map(OS.typeof, [p, s])
             if ptype == OST.ARRAY:
-                pass  # TODO
+                if stype == OST.NUMBER:
+                    stk.append([p[i:i+s] for i in range(0, len(p), s)])
+                elif stype == OST.STRING:
+                    pass  # TODO array/string (???)
+                elif stype == OST.BLOCK:
+                    pass  # TODO each
+                else:
+                    pass  # TODO split on array
             elif ptype == OST.BLOCK:
                 pass  # TODO
             elif ptype == OST.STRING:
-                stk.append(a.split(OS.tostr(b)))
+                stk.append(p.split(OS.tostr(s)))
             elif ptype == OST.NUMBER:
                 stk.append(a / b)
         INSTRUCTIONS['/'] = div
