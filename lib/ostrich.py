@@ -123,14 +123,30 @@ class Ostrich:
 
         def mod(self, stk, prgm):
             a, b = stk.popn(2)
-            ptype, stype = map(OS.typeof, OS.byprec([a, b]))
+            p, s = OS.byprec([a, b])
+            ptype, stype = map(OS.typeof, [p, s])
             if ptype == OST.ARRAY:
-                pass  # TODO
+                if stype == OST.NUMBER:
+                    stk.append(p[::s])
+                elif stype == OST.STRING:
+                    pass  # TODO array%string (???)
+                elif stype == OST.BLOCK:
+                    pass  # TODO map
+                else:
+                    # TODO remove ugly code duplication from div()
+                    split = []
+                    prevIdx = 0
+                    for i in range(len(a) - len(b) + 1):
+                        if a[i:i+len(b)] == b:
+                            split.append(a[prevIdx:i])
+                            prevIdx = i + len(b)
+                    split.append(a[prevIdx:])
+                    stk.append(list(filter(None, split)))
             elif ptype == OST.BLOCK:
                 pass  # TODO
             elif ptype == OST.STRING:
                 if stype == OST.NUMBER:
-                    stk.append(a[::b] if OS.typeof(a) == ptype else b[::a])
+                    stk.append(p[::s])
                 else:
                     stk.append(list(filter(None, a.split(b))))
             elif ptype == OST.NUMBER:
@@ -182,7 +198,7 @@ class Ostrich:
                 stk.append(x[:-1])
                 stk.append(x[-1])
             if xt == OST.BLOCK:
-                pass  # TODO ???
+                pass  # TODO block) ???
             if xt == OST.NUMBER:
                 stk.append(x + 1)
         INSTRUCTIONS[')'] = rightparen
@@ -312,19 +328,59 @@ class Ostrich:
         INSTRUCTIONS[';'] = pop
 
         def lt(self, stk, prgm):
-            pass  # TODO
+            a, b = stk.popn(2)
+            p, s = OS.byprec([a, b])
+            ptype, stype = map(OS.typeof, [p, s])
+            if ptype == stype:
+                stk.append(a < b)
+            else:
+                if stype == OST.NUMBER:
+                    stk.append(OS.convert(p[:s], ptype))
+                else:
+                    pass  # TODO ???
         INSTRUCTIONS['<'] = lt
 
         def eq(self, stk, prgm):
-            pass  # TODO
+            a, b = stk.popn(2)
+            p, s = OS.byprec([a, b])
+            ptype, stype = map(OS.typeof, [p, s])
+            if ptype == stype:
+                stk.append(a == b)
+            else:
+                if stype == OST.NUMBER:
+                    stk.append(OS.convert(p[s], ptype))
+                else:
+                    pass  # TODO ???
         INSTRUCTIONS['='] = eq
 
         def gt(self, stk, prgm):
-            pass  # TODO
+            a, b = stk.popn(2)
+            p, s = OS.byprec([a, b])
+            ptype, stype = map(OS.typeof, [p, s])
+            if ptype == stype:
+                stk.append(a > b)
+            else:
+                if stype == OST.NUMBER:
+                    stk.append(OS.convert(p[s:], ptype))
+                else:
+                    pass  # TODO ???
         INSTRUCTIONS['>'] = gt
 
         def question(self, stk, prgm):
-            pass  # TODO
+            a, b = stk.popn(2)
+            p, s = OS.byprec([a, b])
+            ptype, stype = map(OS.typeof, [p, s])
+            if ptype == OST.ARRAY:
+                if stype == OST.BLOCK:
+                    pass  # TODO find
+                else:
+                    stk.push(p.index(s))
+            elif ptype == OST.BLOCK:
+                pass  # TODO
+            elif ptype == OST.STRING:
+                pass  # TODO
+            elif ptype == OST.NUMBER:
+                stk.append(a ** b)
         INSTRUCTIONS['?'] = question
 
         def roll(self, stk, prgm):
