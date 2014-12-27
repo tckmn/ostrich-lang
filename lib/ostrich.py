@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 
 from collections import defaultdict
-import re
 import itertools
 
-# utility methods and constants
-NULLRE = re.compile('')
+# utility methods
 def Enum(**enums): return type('Enum', (), enums)
 def uniq(s):
     # http://stackoverflow.com/q/480214/1223693
@@ -19,7 +17,7 @@ class Ostrich:
 
     class Stack(list):
         # all Ostrich types; also used for state management
-        TYPES = Enum(NUMBER=0, STRING=1, REGEXP=2, BLOCK=3, ARRAY=4)
+        TYPES = Enum(NUMBER=0, STRING=1, BLOCK=2, ARRAY=3)
         # extra states (used for :, etc.)
         XSTATE = Enum(ASSIGN='_XASGN', RETRIEVE='_XRETR')
 
@@ -29,8 +27,6 @@ class Ostrich:
                 return OST.ARRAY
             if xt is Ostrich.Block:
                 return OST.BLOCK
-            if xt is type(NULLRE):
-                return OST.REGEXP
             if xt is str:
                 return OST.STRING
             if xt is int:
@@ -44,13 +40,9 @@ class Ostrich:
                 return [x]
             if to_type == OST.BLOCK:
                 return Ostrich.Block(OS.tostr(x))
-            if to_type == OST.REGEXP:
-                return re.compile(OS.tostr(x))
             if to_type == OST.STRING:
                 if from_type == OST.ARRAY:
                     return ' '.join(map(OS.convert, x))
-                if from_type == OST.REGEXP:
-                    return x.pattern
                 if from_type in [OST.NUMBER, OST.STRING, OST.BLOCK]:
                     return str(x)
             if to_type == OST.NUMBER:
@@ -66,8 +58,6 @@ class Ostrich:
                 return '[%s]' % ' '.join(map(OS.inspect, x))
             if xt == OST.BLOCK:
                 return '{%s}' % x
-            if xt == OST.REGEXP:
-                return '`%s`' % OS.tostr(x)
             if xt == OST.STRING:
                 return '"%s"' % x
             if xt == OST.NUMBER:
@@ -103,7 +93,7 @@ class Ostrich:
 
         def negate(self, stk, state):
             x = stk.pop()
-            if x in [0, '', NULLRE, Ostrich.Block(''), []]:
+            if x in [0, '', Ostrich.Block(''), []]:
                 stk.append(1)
             else:
                 stk.append(0)
@@ -122,8 +112,6 @@ class Ostrich:
                 stk.push(''.join(sorted(x)))
             if xt == OST.BLOCK:
                 pass  # TODO sort by
-            if xt == OST.REGEXP:
-                stk.push(re.compile(''.join(sorted(OS.tostr(x)))))
             if xt == OST.NUMBER:
                 pass  # TODO stack nth
         INSTRUCTIONS['$'] = dollar
@@ -134,8 +122,6 @@ class Ostrich:
             if ptype == OST.ARRAY:
                 pass  # TODO
             elif ptype == OST.BLOCK:
-                pass  # TODO
-            elif ptype == OST.REGEXP:
                 pass  # TODO
             elif ptype == OST.STRING:
                 if stype == OST.NUMBER:
@@ -158,10 +144,6 @@ class Ostrich:
                 stk.append([x for x in a1 if x in a2])
             elif ptype == OST.BLOCK:
                 pass  # TODO ???
-            elif ptype == OST.REGEXP:
-                r1 = OS.tostr(a)
-                r2 = OS.tostr(b)
-                stk.append(re.compile(''.join([c for c in r1 if c in r2])))
             elif ptype == OST.STRING:
                 s1 = OS.tostr(a)
                 s2 = OS.tostr(b)
@@ -180,10 +162,6 @@ class Ostrich:
             if xt in [OST.ARRAY, OST.STRING]:
                 stk.append(x[1:])
                 stk.append(x[0])
-            if xt == OST.REGEXP:
-                r = OS.tostr(x)
-                stk.append(re.compile(r[1:]))
-                stk.append(re.compile(r[0]))
             if xt == OST.BLOCK:
                 pass  # TODO ???
             if xt == OST.NUMBER:
@@ -196,10 +174,6 @@ class Ostrich:
             if xt in [OST.ARRAY, OST.STRING]:
                 stk.append(x[:-1])
                 stk.append(x[-1])
-            if xt == OST.REGEXP:
-                r = OS.tostr(x)
-                stk.append(re.compile(r[:-1]))
-                stk.append(re.compile(r[-1]))
             if xt == OST.BLOCK:
                 pass  # TODO ???
             if xt == OST.NUMBER:
@@ -212,8 +186,6 @@ class Ostrich:
             if ptype == OST.ARRAY:
                 pass  # TODO
             elif ptype == OST.BLOCK:
-                pass  # TODO
-            elif ptype == OST.REGEXP:
                 pass  # TODO
             elif ptype == OST.STRING:
                 if stype == OST.NUMBER:
@@ -231,8 +203,6 @@ class Ostrich:
                 stk.append(OS.convert(a, OST.ARRAY) + OS.convert(b, OST.ARRAY))
             elif ptype == OST.BLOCK:
                 stk.append(Ostrich.Block(OS.tostr(a) + OS.tostr(b)))
-            elif ptype == OST.REGEXP:
-                stk.append(re.compile(OS.tostr(a) + OS.tostr(b)))
             elif ptype == OST.STRING:
                 stk.append(OS.tostr(a) + OS.tostr(b))
             elif ptype == OST.NUMBER:
@@ -244,8 +214,6 @@ class Ostrich:
             xt = OS.typeof(x)
             if xt in [OST.ARRAY, OST.STRING]:
                 stk.append(len(x))
-            if xt == OST.REGEXP:
-                stk.append(len(OS.tostr(x)))
             if xt == OST.BLOCK:
                 pass  # TODO select
             if xt == OST.NUMBER:
@@ -264,10 +232,6 @@ class Ostrich:
                 stk.append([x for x in a1 if x not in a2])
             elif ptype == OST.BLOCK:
                 pass  # TODO ???
-            elif ptype == OST.REGEXP:
-                r1 = OS.tostr(a)
-                r2 = OS.tostr(b)
-                stk.append(re.compile(''.join([c for c in r1 if c not in r2])))
             elif ptype == OST.STRING:
                 s1 = OS.tostr(a)
                 s2 = OS.tostr(b)
@@ -286,8 +250,6 @@ class Ostrich:
             if ptype == OST.ARRAY:
                 pass  # TODO
             elif ptype == OST.BLOCK:
-                pass  # TODO
-            elif ptype == OST.REGEXP:
                 pass  # TODO
             elif ptype == OST.STRING:
                 stk.append(a.split(OS.tostr(b)))
@@ -359,11 +321,6 @@ class Ostrich:
                            [x for x in a2 if x not in a1])
             elif ptype == OST.BLOCK:
                 pass  # TODO ???
-            elif ptype == OST.REGEXP:
-                r1 = OS.tostr(a)
-                r2 = OS.tostr(b)
-                stk.append(re.compile(''.join([c for c in r1 if c in r2] +
-                                              [c for c in r2 if c in r1])))
             elif ptype == OST.STRING:
                 s1 = OS.tostr(a)
                 s2 = OS.tostr(b)
@@ -374,7 +331,7 @@ class Ostrich:
         INSTRUCTIONS['^'] = bitxor
 
         def backtick(self, stk, state):
-            return OST.REGEXP
+            pass  # TODO
         INSTRUCTIONS['`'] = backtick
 
         def leftcurlybracket(self, stk, state):
@@ -393,10 +350,6 @@ class Ostrich:
                 stk.append(uniq(a1 + a2))
             elif ptype == OST.BLOCK:
                 pass  # TODO ???
-            elif ptype == OST.REGEXP:
-                r1 = OS.tostr(a)
-                r2 = OS.tostr(b)
-                stk.append(re.compile(''.join(uniq(r1 + r2))))
             elif ptype == OST.STRING:
                 s1 = OS.tostr(a)
                 s2 = OS.tostr(b)
@@ -418,8 +371,6 @@ class Ostrich:
                 pass  # TODO dump
             if xt == OST.BLOCK:
                 pass  # TODO eval
-            if xt == OST.REGEXP:
-                pass  # TODO eval
             if xt == OST.STRING:
                 pass  # TODO eval
             if xt == OST.NUMBER:
@@ -435,7 +386,7 @@ class Ostrich:
 
     def run(self, code):
         state = None
-        cumulstr = ''  # string, regexp, block
+        cumulstr = ''  # string, block
         nestcount = 1  # block
         markers = []   # array
 
@@ -444,14 +395,6 @@ class Ostrich:
             if state == OST.STRING:
                 if instr == '"':
                     self.stack.append(cumulstr)
-                    cumulstr = ''
-                    state = None
-                else:
-                    cumulstr += instr
-
-            elif state == OST.REGEXP:
-                if instr == '`':
-                    self.stack.append(re.compile(cumulstr))
                     cumulstr = ''
                     state = None
                 else:
@@ -496,8 +439,6 @@ class Ostrich:
 
         if state == OST.STRING:
             self.stack.append(cumulstr)
-        elif state == OST.REGEXP:
-            self.stack.append(re.compile(cumulstr))
         elif state == OST.BLOCK:
             self.stack.append(Ostrich.Block(cumulstr))
 

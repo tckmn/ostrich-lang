@@ -22,7 +22,7 @@ class OstrichTests(unittest.TestCase):
         self.expect('42!', '0')
         self.expect(';0!', '1')
 
-        for delims in [('"', '"'), ('`', '`'), ('{', '}')]:
+        for delims in [('"', '"'), ('{', '}')]:
             self.expect(';%sfoo%s!' % delims, '0')
             self.expect(';%s %s!'   % delims, '0')
             self.expect(';%s%s!'    % delims, '1')
@@ -111,18 +111,12 @@ class OstrichTests(unittest.TestCase):
         pass  # TODO
 
     def test_backtick(self):
-        self.expect('`foo`', '`foo`')
-        self.expect(';` `', '` `')
-        self.expect(';``', '``')
-
-        self.expect(';`foo', '`foo`')
-        self.expect(';`', '``')
-        # TODO escaping (not implemented)
+        pass  # TODO
 
     def test_leftcurlybracket(self):
         pass  # TODO
 
-    def test_bitor(self);
+    def test_bitor(self):
         pass  # TODO
 
     def test_rightcurlybracket(self):
