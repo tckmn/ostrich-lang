@@ -375,6 +375,7 @@ class Ostrich:
                 pass  # TODO eval
             if xt == OST.NUMBER:
                 stk.append(-x)
+        INSTRUCTIONS['~'] = tilde
 
         return INSTRUCTIONS
 

@@ -108,7 +108,15 @@ class OstrichTests(unittest.TestCase):
         pass  # TODO
 
     def test_roll(self):
-        pass  # TODO
+        self.expect('1 2 3 4 5', '1 2 3 4 5')
+
+        self.expect('2@', '1 2 3 5 4')
+        self.expect('2@', '1 2 3 4 5')
+
+        self.expect('3@', '1 2 4 5 3')
+        self.expect('4@', '1 4 5 3 2')
+        self.expect('5@', '4 5 3 2 1')
+        # TODO negative rolls
 
     def test_leftbracket(self):
         self.expect('[1 2 3]', '[1 2 3]')
