@@ -19,7 +19,7 @@ class Ostrich:
         # all Ostrich types; also used for state management
         TYPES = Enum(NUMBER=0, STRING=1, BLOCK=2, ARRAY=3)
         # extra states (used for :, etc.)
-        XSTATE = Enum(ASSIGN='_XASGN', RETRIEVE='_XRETR')
+        XSTATE = Enum(ASSIGN='_XASGN', RETRIEVE='_XRETR', EVAL='_XEVAL')
 
         def typeof(x):
             xt = type(x)
@@ -178,7 +178,7 @@ class Ostrich:
                 pass  # TODO ???
             if xt == OST.NUMBER:
                 stk.append(x + 1)
-        INSTRUCTIONS['('] = rightparen
+        INSTRUCTIONS[')'] = rightparen
 
         def times(self, stk, state):
             a, b = stk.popn(2)
@@ -370,9 +370,11 @@ class Ostrich:
             if xt == OST.ARRAY:
                 stk.extend(x)
             if xt == OST.BLOCK:
-                pass  # TODO eval
+                stk.append(x)
+                return OS.XSTATE.EVAL
             if xt == OST.STRING:
-                pass  # TODO eval
+                stk.append(x)
+                return OS.XSTATE.EVAL
             if xt == OST.NUMBER:
                 stk.append(-x)
         INSTRUCTIONS['~'] = tilde
@@ -391,7 +393,10 @@ class Ostrich:
         nestcount = 1  # block
         markers = []   # array
 
-        for instr in code:
+        while code:
+
+            instr = code[0]
+            code = code[1:]
 
             if state == OST.STRING:
                 if instr == '`':
@@ -430,10 +435,13 @@ class Ostrich:
                 elif type(state) is str and state.startswith(OS.XSTATE.RETRIEVE):
                     x = self.variables[state[len(OS.XSTATE.RETRIEVE):]]
                     if x:
-                        self.stack.append(x)
                         if OS.typeof(x) == OST.BLOCK:
-                            # TODO execute if block
-                            pass
+                            code = x + code
+                        else:
+                            self.stack.append(x)
+                elif state == OS.XSTATE.EVAL:
+                    code = self.stack.pop() + code
+                    state = None
 
         # finished parsing instr's
         # perform final cleanup
