@@ -2,6 +2,7 @@
 
 from collections import defaultdict
 import re
+import itertools
 
 # utility methods and constants
 NULLRE = re.compile('')
@@ -140,7 +141,7 @@ class Ostrich:
                 if stype == OST.NUMBER:
                     pass  # TODO str[::x]
                 else:
-                    pass  # TODO product
+                    stk.append(list(map(list, itertools.product(a, b))))
             elif ptype == OST.NUMBER:
                 stk.append(a % b)
         INSTRUCTIONS['%'] = mod
@@ -176,8 +177,13 @@ class Ostrich:
         def leftparen(self, stk, state):
             x = stk.pop()
             xt = OS.typeof(x)
-            if xt in [OST.ARRAY, OST.REGEXP, OST.STRING]:
-                pass  # TODO uncons
+            if xt in [OST.ARRAY, OST.STRING]:
+                stk.append(x[1:])
+                stk.append(x[0])
+            if xt == OST.REGEXP:
+                r = OS.tostr(x)
+                stk.append(re.compile(r[1:]))
+                stk.append(re.compile(r[0]))
             if xt == OST.BLOCK:
                 pass  # TODO ???
             if xt == OST.NUMBER:
@@ -187,8 +193,13 @@ class Ostrich:
         def rightparen(self, stk, state):
             x = stk.pop()
             xt = OS.typeof(x)
-            if xt in [OST.ARRAY, OST.REGEXP, OST.STRING]:
-                pass  # TODO right-uncons
+            if xt in [OST.ARRAY, OST.STRING]:
+                stk.append(x[:-1])
+                stk.append(x[-1])
+            if xt == OST.REGEXP:
+                r = OS.tostr(x)
+                stk.append(re.compile(r[:-1]))
+                stk.append(re.compile(r[-1]))
             if xt == OST.BLOCK:
                 pass  # TODO ???
             if xt == OST.NUMBER:
