@@ -113,7 +113,7 @@ class Ostrich:
             if xt == OST.BLOCK:
                 pass  # TODO sort by
             if xt == OST.NUMBER:
-                pass  # TODO stack nth
+                stk.push(stk[-x])
         INSTRUCTIONS['$'] = dollar
 
         def mod(self, stk, state):
@@ -368,7 +368,7 @@ class Ostrich:
             x = stk.pop()
             xt = OS.typeof(x)
             if xt == OST.ARRAY:
-                pass  # TODO dump
+                stk.extend(x)
             if xt == OST.BLOCK:
                 pass  # TODO eval
             if xt == OST.STRING:
