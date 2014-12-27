@@ -127,7 +127,7 @@ class Ostrich:
                 if stype == OST.NUMBER:
                     stk.append(a[::b] if OS.typeof(a) == ptype else b[::a])
                 else:
-                    stk.append(list(map(list, itertools.product(a, b))))
+                    stk.append(list(filter(None, a.split(b))))
             elif ptype == OST.NUMBER:
                 stk.append(a % b)
         INSTRUCTIONS['%'] = mod
@@ -275,7 +275,14 @@ class Ostrich:
                 elif stype == OST.BLOCK:
                     pass  # TODO each
                 else:
-                    pass  # TODO split on array
+                    split = []
+                    prevIdx = 0
+                    for i in range(len(a) - len(b) + 1):
+                        if a[i:i+len(b)] == b:
+                            split.append(a[prevIdx:i])
+                            prevIdx = i + len(b)
+                    split.append(a[prevIdx:])
+                    stk.append(split)
             elif ptype == OST.BLOCK:
                 pass  # TODO
             elif ptype == OST.STRING:
