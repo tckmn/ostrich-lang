@@ -25,7 +25,7 @@ class Ostrich:
             xt = type(x)
             if xt is list:
                 return OST.ARRAY
-            if xt is Ostrich.Block:
+            if xt is block:
                 return OST.BLOCK
             if xt is str:
                 return OST.STRING
@@ -39,7 +39,7 @@ class Ostrich:
                     return x
                 return [x]
             if to_type == OST.BLOCK:
-                return Ostrich.Block(OS.tostr(x))
+                return block(OS.tostr(x))
             if to_type == OST.STRING:
                 if from_type == OST.ARRAY:
                     return ' '.join(map(OS.convert, x))
@@ -61,7 +61,7 @@ class Ostrich:
             if xt == OST.STRING:
                 return '`%s`' % x
             if xt == OST.NUMBER:
-                return str(x)
+                return '%d'   % x
 
         # pop n elements
         def popn(self, n):
@@ -93,7 +93,7 @@ class Ostrich:
 
         def negate(self, stk, prgm):
             x = stk.pop()
-            if x in [0, '', Ostrich.Block(''), []]:
+            if x in [0, '', block(''), []]:
                 stk.append(1)
             else:
                 stk.append(0)
@@ -150,8 +150,7 @@ class Ostrich:
             elif ptype == OST.BLOCK:
                 s1 = OS.tostr(a)
                 s2 = OS.tostr(b)
-                stk.append(OS.convert(''.join([c for c in s1 if c in s2]),
-                                      OST.BLOCK))
+                stk.append(block(''.join([c for c in s1 if c in s2])))
             elif ptype == OST.STRING:
                 s1 = OS.tostr(a)
                 s2 = OS.tostr(b)
@@ -226,7 +225,7 @@ class Ostrich:
             if ptype == OST.ARRAY:
                 stk.append(OS.convert(a, OST.ARRAY) + OS.convert(b, OST.ARRAY))
             elif ptype == OST.BLOCK:
-                stk.append(OS.convert(OS.tostr(a) + OS.tostr(b), OST.BLOCK))
+                stk.append(block(OS.tostr(a) + OS.tostr(b)))
             elif ptype == OST.STRING:
                 stk.append(OS.tostr(a) + OS.tostr(b))
             elif ptype == OST.NUMBER:
@@ -361,9 +360,8 @@ class Ostrich:
             elif ptype == OST.BLOCK:
                 s1 = OS.tostr(a)
                 s2 = OS.tostr(b)
-                stk.append(OS.convert(''.join([c for c in s1 if c not in s2] +
-                                              [c for c in s2 if c not in s1]),
-                                      OST.BLOCK))
+                stk.append(block(''.join([c for c in s1 if c not in s2] +
+                                         [c for c in s2 if c not in s1])))
             elif ptype == OST.STRING:
                 s1 = OS.tostr(a)
                 s2 = OS.tostr(b)
@@ -394,7 +392,7 @@ class Ostrich:
             elif ptype == OST.BLOCK:
                 s1 = OS.tostr(a)
                 s2 = OS.tostr(b)
-                stk.append(OS.convert(''.join(uniq(s1 + s2)), OST.BLOCK))
+                stk.append(block(''.join(uniq(s1 + s2))))
             elif ptype == OST.STRING:
                 s1 = OS.tostr(a)
                 s2 = OS.tostr(b)
@@ -454,7 +452,7 @@ class Ostrich:
                 if instr == '}':
                     nestcount -= 1
                     if nestcount == 0:
-                        self.stack.append(Ostrich.Block(cumulstr))
+                        self.stack.append(block(cumulstr))
                         cumulstr = ''
                         nestcount = 1  # reset for next time
                         self.state = None
@@ -490,7 +488,7 @@ class Ostrich:
         if self.state == OST.STRING:
             self.stack.append(cumulstr)
         elif self.state == OST.BLOCK:
-            self.stack.append(Ostrich.Block(cumulstr))
+            self.stack.append(OS.convert(cumulstr, OST.BLOCK))
         self.state = None
 
         while markers:
@@ -501,6 +499,7 @@ class Ostrich:
 # just for convenience
 OS = Ostrich.Stack
 OST = Ostrich.Stack.TYPES
+block = Ostrich.Block
 
 if __name__ == '__main__':
     import sys  # sys.exit
