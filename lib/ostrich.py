@@ -59,7 +59,7 @@ class Ostrich:
             if xt == OST.BLOCK:
                 return '{%s}' % x
             if xt == OST.STRING:
-                return '"%s"' % x
+                return '`%s`' % x
             if xt == OST.NUMBER:
                 return str(x)
 
@@ -100,7 +100,7 @@ class Ostrich:
         INSTRUCTIONS['!'] = negate
 
         def quote(self, stk, state):
-            return OST.STRING
+            pass  # TODO
         INSTRUCTIONS['"'] = quote
 
         def dollar(self, stk, state):
@@ -331,7 +331,7 @@ class Ostrich:
         INSTRUCTIONS['^'] = bitxor
 
         def backtick(self, stk, state):
-            pass  # TODO
+            return OST.STRING
         INSTRUCTIONS['`'] = backtick
 
         def leftcurlybracket(self, stk, state):
@@ -393,7 +393,7 @@ class Ostrich:
         for instr in code:
 
             if state == OST.STRING:
-                if instr == '"':
+                if instr == '`':
                     self.stack.append(cumulstr)
                     cumulstr = ''
                     state = None
