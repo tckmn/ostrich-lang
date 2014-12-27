@@ -155,7 +155,10 @@ class OstrichTests(unittest.TestCase):
         pass  # TODO
 
     def test_tilde(self):
-        pass  # TODO
+        self.expect('1 2 3]~', '1 2 3')
+        self.expect(';;;{1 1+}~', '2')
+        self.expect(';`1 1+`~', '2')
+        self.expect(';42~', '-42')
 
 if __name__ == '__main__':
     unittest.main()

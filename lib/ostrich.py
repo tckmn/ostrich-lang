@@ -125,7 +125,7 @@ class Ostrich:
                 pass  # TODO
             elif ptype == OST.STRING:
                 if stype == OST.NUMBER:
-                    pass  # TODO str[::x]
+                    stk.append(a[::b] if OS.typeof(a) == ptype else b[::a])
                 else:
                     stk.append(list(map(list, itertools.product(a, b))))
             elif ptype == OST.NUMBER:
@@ -143,7 +143,10 @@ class Ostrich:
                 a2 = OS.convert(b, OST.ARRAY)
                 stk.append([x for x in a1 if x in a2])
             elif ptype == OST.BLOCK:
-                pass  # TODO ???
+                s1 = OS.tostr(a)
+                s2 = OS.tostr(b)
+                stk.append(OS.convert(''.join([c for c in s1 if c in s2]),
+                                      OST.BLOCK))
             elif ptype == OST.STRING:
                 s1 = OS.tostr(a)
                 s2 = OS.tostr(b)
@@ -202,7 +205,7 @@ class Ostrich:
             if ptype == OST.ARRAY:
                 stk.append(OS.convert(a, OST.ARRAY) + OS.convert(b, OST.ARRAY))
             elif ptype == OST.BLOCK:
-                stk.append(Ostrich.Block(OS.tostr(a) + OS.tostr(b)))
+                stk.append(OS.convert(OS.tostr(a) + OS.tostr(b), OST.BLOCK))
             elif ptype == OST.STRING:
                 stk.append(OS.tostr(a) + OS.tostr(b))
             elif ptype == OST.NUMBER:
@@ -312,7 +315,7 @@ class Ostrich:
             a, b = stk.popn(2)
             ptype = OS.typeof(OS.byprec([a, b])[0])
 
-            # note: enumerable | enumerable does not use set() because
+            # note: enumerable ^ enumerable does not use set() because
             # order must be guaranteed
             if ptype == OST.ARRAY:
                 a1 = OS.convert(a, OST.ARRAY)
@@ -320,12 +323,16 @@ class Ostrich:
                 stk.append([x for x in a1 if x not in a2] +
                            [x for x in a2 if x not in a1])
             elif ptype == OST.BLOCK:
-                pass  # TODO ???
+                s1 = OS.tostr(a)
+                s2 = OS.tostr(b)
+                stk.append(OS.convert(''.join([c for c in s1 if c not in s2] +
+                                              [c for c in s2 if c not in s1]),
+                                      OST.BLOCK))
             elif ptype == OST.STRING:
                 s1 = OS.tostr(a)
                 s2 = OS.tostr(b)
-                stk.append(''.join([c for c in s1 if c in s2] +
-                                   [c for c in s2 if c in s1]))
+                stk.append(''.join([c for c in s1 if c not in s2] +
+                                   [c for c in s2 if c not in s1]))
             elif ptype == OST.NUMBER:
                 stk.append(a ^ b)
         INSTRUCTIONS['^'] = bitxor
@@ -349,7 +356,9 @@ class Ostrich:
                 a2 = OS.convert(b, OST.ARRAY)
                 stk.append(uniq(a1 + a2))
             elif ptype == OST.BLOCK:
-                pass  # TODO ???
+                s1 = OS.tostr(a)
+                s2 = OS.tostr(b)
+                stk.append(OS.convert(''.join(uniq(s1 + s2)), OST.BLOCK))
             elif ptype == OST.STRING:
                 s1 = OS.tostr(a)
                 s2 = OS.tostr(b)
