@@ -20,14 +20,18 @@ class OstrichTests(unittest.TestCase):
 
     def test_negate(self):
         self.expect('42!', '0')
+        self.expect(';1!', '0')
         self.expect(';0!', '1')
 
-        for delims in [('`', '`'), ('{', '}')]:
-            self.expect(';%sfoo%s!' % delims, '0')
-            self.expect(';%s %s!'   % delims, '0')
-            self.expect(';%s%s!'    % delims, '1')
+        self.expect(';`foo`!', '0')
+        self.expect(';``!', '1')
 
-        # TODO arrays (not implemented yet)
+        self.expect(';{foo}!', '0')
+        self.expect(';{}!', '1')
+
+        self.expect(';[`foo`]!', '0')
+        self.expect(';[``]!', '0')
+        self.expect(';[]!', '1')
 
     def test_quote(self):
         pass  # TODO
@@ -54,7 +58,19 @@ class OstrichTests(unittest.TestCase):
         pass  # TODO
 
     def test_plus(self):
-        pass  # TODO
+        self.expect('[1 2][3 4]+', '[1 2 3 4]')
+        self.expect(';[{foo}{bar}]{baz}+', '[{foo} {bar} {baz}]')
+        self.expect(';[`foo``bar`]`baz`+', '[`foo` `bar` `baz`]')
+        self.expect(';[1 2]3+', '[1 2 3]')
+
+        self.expect(';{foo}{bar}+', '{foobar}')
+        self.expect(';{foo}`bar`+', '{foobar}')
+        self.expect(';{foo}1+', '{foo1}')
+
+        self.expect(';`foo``bar`+', '`foobar`')
+        self.expect(';`foo`1+', '`foo1`')
+
+        self.expect(';2 2+', '4')
 
     def test_comma(self):
         pass  # TODO
@@ -63,7 +79,8 @@ class OstrichTests(unittest.TestCase):
         pass  # TODO
 
     def test_duplicate(self):
-        pass  # TODO
+        self.expect('42.', '42 42')
+        self.expect(';;.', '')
 
     def test_div(self):
         pass  # TODO
@@ -75,7 +92,8 @@ class OstrichTests(unittest.TestCase):
         pass  # TODO
 
     def test_pop(self):
-        pass  # TODO
+        self.expect('42;', '')
+        self.expect(';', '')
 
     def test_lt(self):
         pass  # TODO
@@ -93,20 +111,26 @@ class OstrichTests(unittest.TestCase):
         pass  # TODO
 
     def test_leftbracket(self):
-        pass  # TODO
+        self.expect('[1 2 3]', '[1 2 3]')
+        self.expect(';[]', '[]')
+
+        self.expect(';[1 2 3', '[1 2 3]')
+        self.expect(';[', '[]')
+        self.expect(';[[1[[[2[3', '[[1 [[[2 [3]]]]]]')
 
     def test_swaptwo(self):
-        pass  # TODO
+        self.expect('1 2 3\\', '1 3 2')
 
     def test_rightbracket(self):
-        pass  # TODO
+        self.expect('1 2 3]', '[1 2 3]')
+        self.expect('1]', '[[1 2 3] 1]')
+        self.expect(']', '[[[1 2 3] 1]]')
 
     def test_bitxor(self):
         pass  # TODO
 
     def test_backtick(self):
         self.expect('`foo`', '`foo`')
-        self.expect(';` `', '` `')
         self.expect(';``', '``')
 
         self.expect(';`foo', '`foo`')

@@ -241,7 +241,7 @@ class Ostrich:
         INSTRUCTIONS['-'] = minus
 
         def duplicate(self, stk, state):
-            stk.append(stk[-1])
+            if stk: stk.append(stk[-1])
         INSTRUCTIONS['.'] = duplicate
 
         def div(self, stk, state):
@@ -270,7 +270,7 @@ class Ostrich:
         INSTRUCTIONS[':'] = assign
 
         def pop(self, stk, state):
-            stk.pop()
+            if stk: stk.pop()
         INSTRUCTIONS[';'] = pop
 
         def lt(self, stk, state):
