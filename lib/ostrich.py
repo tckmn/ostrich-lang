@@ -6,6 +6,9 @@ import re
 # utility methods and constants
 NULLRE = re.compile('')
 def Enum(**enums): return type('Enum', (), enums)
+def uniq(s):
+    seen = set()
+    return [x for x in s if x not in seen and not seen.add(x)]
 
 
 class Ostrich:
@@ -141,7 +144,29 @@ class Ostrich:
                 stk.append(a % b)
         INSTRUCTIONS['%'] = mod
 
-        # TODO &
+        def bitand(self, stk, state):
+            a, b = stk.popn(2)
+            ptype = OS.typeof(OS.byprec([a, b])[0])
+
+            # note: enumerable & enumerable does not use set() because
+            # order must be guaranteed
+            if ptype == OST.ARRAY:
+                a1 = OS.convert(a, OST.ARRAY)
+                a2 = OS.convert(b, OST.ARRAY)
+                stk.append([x for x in a1 if x in a2])
+            elif ptype == OST.BLOCK:
+                pass  # TODO ???
+            elif ptype == OST.REGEXP:
+                r1 = OS.tostr(a)
+                r2 = OS.tostr(b)
+                stk.append(re.compile(''.join([c for c in r1 if c in r2])))
+            elif ptype == OST.STRING:
+                s1 = OS.tostr(a)
+                s2 = OS.tostr(b)
+                stk.append(''.join([c for c in s1 if c in s2]))
+            elif ptype == OST.NUMBER:
+                stk.append(a & b)
+        INSTRUCTIONS['&'] = bitand
 
         def inspect(self, stk, state):
             stk.append(OS.inspect(stk.pop()))
@@ -218,6 +243,9 @@ class Ostrich:
         def minus(self, stk, state):
             a, b = stk.popn(2)
             ptype = OS.typeof(OS.byprec([a, b])[0])
+
+            # note: enumerable - enumerable does not use set() because
+            # order must be guaranteed
             if ptype == OST.ARRAY:
                 a1 = OS.convert(a, OST.ARRAY)
                 a2 = OS.convert(b, OST.ARRAY)
@@ -300,7 +328,32 @@ class Ostrich:
             return -OST.ARRAY
         INSTRUCTIONS[']'] = rightbracket
 
-        # TODO ^
+        def bitxor(self, stk, state):
+            a, b = stk.popn(2)
+            ptype = OS.typeof(OS.byprec([a, b])[0])
+
+            # note: enumerable | enumerable does not use set() because
+            # order must be guaranteed
+            if ptype == OST.ARRAY:
+                a1 = OS.convert(a, OST.ARRAY)
+                a2 = OS.convert(b, OST.ARRAY)
+                stk.append([x for x in a1 if x not in a2] +
+                        [x for x in a2 if x not in a1])
+            elif ptype == OST.BLOCK:
+                pass  # TODO ???
+            elif ptype == OST.REGEXP:
+                r1 = OS.tostr(a)
+                r2 = OS.tostr(b)
+                stk.append(re.compile(''.join([c for c in r1 if c in r2] +
+                    [c for c in r2 if c in r1])))
+            elif ptype == OST.STRING:
+                s1 = OS.tostr(a)
+                s2 = OS.tostr(b)
+                stk.append(''.join([c for c in s1 if c in s2] +
+                    [c for c in s2 if c in s1]))
+            elif ptype == OST.NUMBER:
+                stk.append(a ^ b)
+        INSTRUCTIONS['^'] = bitxor
 
         # TODO _
 
@@ -314,7 +367,29 @@ class Ostrich:
             return OST.BLOCK
         INSTRUCTIONS['{'] = leftcurlybracket
 
-        # TODO |
+        def bitor(self, stk, state):
+            a, b = stk.popn(2)
+            ptype = OS.typeof(OS.byprec([a, b])[0])
+
+            # note: enumerable | enumerable does not use set() because
+            # order must be guaranteed
+            if ptype == OST.ARRAY:
+                a1 = OS.convert(a, OST.ARRAY)
+                a2 = OS.convert(b, OST.ARRAY)
+                stk.append(uniq(a1 + a2))
+            elif ptype == OST.BLOCK:
+                pass  # TODO ???
+            elif ptype == OST.REGEXP:
+                r1 = OS.tostr(a)
+                r2 = OS.tostr(b)
+                stk.append(re.compile(''.join(uniq(r1 + r2))))
+            elif ptype == OST.STRING:
+                s1 = OS.tostr(a)
+                s2 = OS.tostr(b)
+                stk.append(''.join(uniq(s1 + s2)))
+            elif ptype == OST.NUMBER:
+                stk.append(a | b)
+        INSTRUCTIONS['|'] = bitor
 
         # this normally isn't called unless there are unmatched brackets
         # block parsing is done within Ostrich#run

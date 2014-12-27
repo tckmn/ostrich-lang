@@ -44,6 +44,9 @@ class OstrichTests(unittest.TestCase):
     def test_mod(self):
         pass  # TODO
 
+    def test_bitand(self):
+        pass  # TODO
+
     def test_inspect(self):
         pass  # TODO
 
@@ -92,6 +95,9 @@ class OstrichTests(unittest.TestCase):
     def test_rightbracket(self):
         pass  # TODO
 
+    def test_bitxor(self):
+        pass  # TODO
+
     def test_backtick(self):
         self.expect('`foo`', '`foo`')
         self.expect(';` `', '` `')
@@ -102,6 +108,9 @@ class OstrichTests(unittest.TestCase):
         # TODO escaping (not implemented)
 
     def test_leftcurlybracket(self):
+        pass  # TODO
+
+    def test_bitor(self);
         pass  # TODO
 
     def test_rightcurlybracket(self):
