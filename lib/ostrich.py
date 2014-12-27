@@ -107,13 +107,18 @@ class Ostrich:
             x = stk.pop()
             xt = OS.typeof(x)
             if xt == OST.ARRAY:
-                stk.push(sorted(x))
+                stk.append(sorted(x))
             if xt == OST.STRING:
-                stk.push(''.join(sorted(x)))
+                stk.append(''.join(sorted(x)))
             if xt == OST.BLOCK:
-                pass  # TODO sort by
+                toSort = stk.pop()
+                def sKey(el):
+                    prgm.run(OS.inspect(el))
+                    prgm.run(x)
+                    return stk.pop()
+                stk.append(sorted(toSort, key=sKey))
             if xt == OST.NUMBER:
-                stk.push(stk[-x])
+                stk.append(stk[-x])
         INSTRUCTIONS['$'] = dollar
 
         def mod(self, stk, prgm):
