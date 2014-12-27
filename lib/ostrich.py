@@ -7,6 +7,7 @@ import re
 NULLRE = re.compile('')
 def Enum(**enums): return type('Enum', (), enums)
 def uniq(s):
+    # http://stackoverflow.com/q/480214/1223693
     seen = set()
     return [x for x in s if x not in seen and not seen.add(x)]
 
@@ -92,6 +93,8 @@ class Ostrich:
             return unknowninstr_inner
         INSTRUCTIONS = defaultdict(unknowninstr)
 
+        # TODO things not in GS: A-Za-z_#
+
         def whitespace(self, stk, state):
             pass
         INSTRUCTIONS['\n'] = whitespace
@@ -108,8 +111,6 @@ class Ostrich:
         def quote(self, stk, state):
             return OST.STRING
         INSTRUCTIONS['"'] = quote
-
-        # TODO #
 
         def dollar(self, stk, state):
             x = stk.pop()
@@ -299,13 +300,21 @@ class Ostrich:
             stk.pop()
         INSTRUCTIONS[';'] = pop
 
-        # TODO <
+        def lt(self, stk, state):
+            pass  # TODO
+        INSTRUCTIONS['<'] = lt
 
-        # TODO =
+        def eq(self, stk, state):
+            pass  # TODO
+        INSTRUCTIONS['='] = eq
 
-        # TODO >
+        def gt(self, stk, state):
+            pass  # TODO
+        INSTRUCTIONS['>'] = gt
 
-        # TODO ?
+        def question(self, stk, state):
+            pass  # TODO
+        INSTRUCTIONS['?'] = question
 
         def roll(self, stk, state):
             count = stk.pop()
@@ -313,8 +322,6 @@ class Ostrich:
             stk.extend(xs[1:])
             stk.append(xs[0])
         INSTRUCTIONS['@'] = roll
-
-        # TODO A-Z
 
         def leftbracket(self, stk, state):
             return OST.ARRAY
@@ -338,30 +345,26 @@ class Ostrich:
                 a1 = OS.convert(a, OST.ARRAY)
                 a2 = OS.convert(b, OST.ARRAY)
                 stk.append([x for x in a1 if x not in a2] +
-                        [x for x in a2 if x not in a1])
+                           [x for x in a2 if x not in a1])
             elif ptype == OST.BLOCK:
                 pass  # TODO ???
             elif ptype == OST.REGEXP:
                 r1 = OS.tostr(a)
                 r2 = OS.tostr(b)
                 stk.append(re.compile(''.join([c for c in r1 if c in r2] +
-                    [c for c in r2 if c in r1])))
+                                              [c for c in r2 if c in r1])))
             elif ptype == OST.STRING:
                 s1 = OS.tostr(a)
                 s2 = OS.tostr(b)
                 stk.append(''.join([c for c in s1 if c in s2] +
-                    [c for c in s2 if c in s1]))
+                                   [c for c in s2 if c in s1]))
             elif ptype == OST.NUMBER:
                 stk.append(a ^ b)
         INSTRUCTIONS['^'] = bitxor
 
-        # TODO _
-
         def backtick(self, stk, state):
             return OST.REGEXP
         INSTRUCTIONS['`'] = backtick
-
-        # TODO a-z
 
         def leftcurlybracket(self, stk, state):
             return OST.BLOCK

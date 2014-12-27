@@ -83,6 +83,18 @@ class OstrichTests(unittest.TestCase):
     def test_pop(self):
         pass  # TODO
 
+    def test_lt(self):
+        pass  # TODO
+
+    def test_eq(self):
+        pass  # TODO
+
+    def test_gt(self):
+        pass  # TODO
+
+    def test_question(self):
+        pass  # TODO
+
     def test_roll(self):
         pass  # TODO
 
