@@ -254,7 +254,14 @@ class Ostrich:
             if xt in [OST.ARRAY, OST.STRING]:
                 stk.append(len(x))
             if xt == OST.BLOCK:
-                pass  # TODO select
+                toSelect = stk.pop()
+                arr = []
+                for item in toSelect:
+                    prgm.run(OS.inspect(item))
+                    prgm.run(x)
+                    if stk.pop():
+                        arr.append(item)
+                stk.append(arr)
             if xt == OST.NUMBER:
                 stk.append(list(range(x)))
         INSTRUCTIONS[','] = comma
@@ -332,7 +339,7 @@ class Ostrich:
             p, s = OS.byprec([a, b])
             ptype, stype = map(OS.typeof, [p, s])
             if ptype == stype:
-                stk.append(a < b)
+                stk.append(int(a < b))
             else:
                 if stype == OST.NUMBER:
                     stk.append(OS.convert(p[:s], ptype))
@@ -345,7 +352,7 @@ class Ostrich:
             p, s = OS.byprec([a, b])
             ptype, stype = map(OS.typeof, [p, s])
             if ptype == stype:
-                stk.append(a == b)
+                stk.append(int(a == b))
             else:
                 if stype == OST.NUMBER:
                     stk.append(OS.convert(p[s], ptype))
@@ -358,7 +365,7 @@ class Ostrich:
             p, s = OS.byprec([a, b])
             ptype, stype = map(OS.typeof, [p, s])
             if ptype == stype:
-                stk.append(a > b)
+                stk.append(int(a > b))
             else:
                 if stype == OST.NUMBER:
                     stk.append(OS.convert(p[s:], ptype))
