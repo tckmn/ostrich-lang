@@ -12,6 +12,12 @@ def uniq(s):
 
 
 class Ostrich:
+    MAJOR_VERSION = 0
+    MINOR_VERSION = 1
+    PATCH_VERSION = 0
+    # VERSION_DESC = None
+    VERSION_DESC = 'alpha'
+
     # to differentiate blocks and strings
     class Block(str): pass
 
@@ -599,14 +605,14 @@ OST = Ostrich.Stack.TYPES
 block = Ostrich.Block
 
 if __name__ == '__main__':
-    import sys  # sys.exit
+    import sys  # sys.exit, sys.stdin
 
     # parse command line arguments
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument(
         'filename', nargs='?',
-        help='path to Ostrich file to execute'
+        help='path to Ostrich file to execute, - for stdin'
     )
     parser.add_argument(
         '-i', '--interactive', action='store_true',
@@ -619,6 +625,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
     program = Ostrich()
     if args.interactive:
+        print('''This is Ostrich v%d.%d.%d%s
+Type any command or \\\\help for help.''' % (
+            Ostrich.MAJOR_VERSION,
+            Ostrich.MINOR_VERSION,
+            Ostrich.PATCH_VERSION,
+            ' (%s)' % Ostrich.VERSION_DESC if Ostrich.VERSION_DESC else ''))
         # REPL
         import readline
         while True:
@@ -628,7 +640,14 @@ if __name__ == '__main__':
             except (EOFError, KeyboardInterrupt):
                 sys.exit('')
             # E
-            rtn = program.run(code)
+            if code[:2] == '\\\\':
+                cmd = code[2:]
+                if cmd == 'help':
+                    rtn = 'Please see README.md. (this will give actual help soon)'
+                else:
+                    rtn = 'Unknown extended command `%s\'.' % cmd
+            else:
+                rtn = program.run(code)
             # P
             print(rtn)
             # L
@@ -637,11 +656,15 @@ if __name__ == '__main__':
         program.run(args.exec)
     elif args.filename:
         # resolve path, get code
-        import os
-        path = os.path.abspath(args.filename)
-        if not os.path.exists(path):
-            sys.exit('Err: Path %s does not exist' % path)
-        code = open(path).read()
+        code = None
+        if args.filename == '-':
+            code = sys.stdin.read()
+        else:
+            import os
+            path = os.path.abspath(args.filename)
+            if not os.path.exists(path):
+                sys.exit('Err: Path %s does not exist' % path)
+            code = open(path).read()
 
         # execute code!
         program.run(code)
