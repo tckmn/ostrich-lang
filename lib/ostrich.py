@@ -100,7 +100,7 @@ class Ostrich:
         INSTRUCTIONS['!'] = negate
 
         def quote(self, stk, prgm):
-            pass  # TODO
+            pass  # TODO "
         INSTRUCTIONS['"'] = quote
 
         def dollar(self, stk, prgm):
@@ -129,7 +129,7 @@ class Ostrich:
                 if stype == OST.NUMBER:
                     stk.append(p[::s])
                 elif stype == OST.STRING:
-                    pass  # TODO array%string (???)
+                    pass  # TODO array%string
                 elif stype == OST.BLOCK:
                     marker = len(stk)
                     for x in p:
@@ -138,7 +138,6 @@ class Ostrich:
                     stk.append(stk[marker:])
                     del stk[marker:-1]
                 else:
-                    # TODO remove ugly code duplication from div()
                     split = []
                     prevIdx = 0
                     for i in range(len(a) - len(b) + 1):
@@ -148,7 +147,17 @@ class Ostrich:
                     split.append(a[prevIdx:])
                     stk.append(list(filter(None, split)))
             elif ptype == OST.BLOCK:
-                pass  # TODO
+                if stype == OST.NUMBER:
+                    pass  # TODO block/number
+                elif stype == OST.STRING:
+                    marker = len(stk)
+                    for x in s:
+                        prgm.run(OS.inspect(x))
+                        prgm.run(p)
+                    stk.append(''.join(stk[marker:]))
+                    del stk[marker:-1]
+                else:
+                    pass  # TODO block/block
             elif ptype == OST.STRING:
                 if stype == OST.NUMBER:
                     stk.append(p[::s])
@@ -191,7 +200,7 @@ class Ostrich:
                 stk.append(x[1:])
                 stk.append(x[0])
             if xt == OST.BLOCK:
-                pass  # TODO block( ???
+                pass  # TODO block(
             if xt == OST.NUMBER:
                 stk.append(x - 1)
         INSTRUCTIONS['('] = leftparen
@@ -203,7 +212,7 @@ class Ostrich:
                 stk.append(x[:-1])
                 stk.append(x[-1])
             if xt == OST.BLOCK:
-                pass  # TODO block) ???
+                pass  # TODO block)
             if xt == OST.NUMBER:
                 stk.append(x + 1)
         INSTRUCTIONS[')'] = rightparen
@@ -236,7 +245,7 @@ class Ostrich:
                         stk.append(x)
                         prgm.run(p)
                 else:
-                    pass  # TODO block*block (???)
+                    pass  # TODO block*block
             elif ptype == OST.STRING:
                 if stype == OST.NUMBER:
                     stk.append(p * s)
@@ -288,7 +297,7 @@ class Ostrich:
                 a2 = OS.convert(b, OST.ARRAY)
                 stk.append([x for x in a1 if x not in a2])
             elif ptype == OST.BLOCK:
-                pass  # TODO ???
+                pass  # TODO
             elif ptype == OST.STRING:
                 s1 = OS.tostr(a)
                 s2 = OS.tostr(b)
@@ -309,7 +318,7 @@ class Ostrich:
                 if stype == OST.NUMBER:
                     stk.append([p[i:i+s] for i in range(0, len(p), s)])
                 elif stype == OST.STRING:
-                    pass  # TODO array/string (???)
+                    pass  # TODO array/string
                 elif stype == OST.BLOCK:
                     for x in p:
                         prgm.run(OS.inspect(x))
@@ -324,7 +333,14 @@ class Ostrich:
                     split.append(a[prevIdx:])
                     stk.append(split)
             elif ptype == OST.BLOCK:
-                pass  # TODO
+                if stype == OST.NUMBER:
+                    pass  # TODO block/number
+                elif stype == OST.STRING:
+                    for x in s:
+                        prgm.run(OS.inspect(x))
+                        prgm.run(p)
+                else:
+                    pass  # TODO block/block
             elif ptype == OST.STRING:
                 stk.append(p.split(OS.tostr(s)))
             elif ptype == OST.NUMBER:
@@ -357,7 +373,7 @@ class Ostrich:
                 if stype == OST.NUMBER:
                     stk.append(OS.convert(p[:s], ptype))
                 else:
-                    pass  # TODO ???
+                    pass  # TODO
         INSTRUCTIONS['<'] = lt
 
         def eq(self, stk, prgm):
@@ -370,7 +386,7 @@ class Ostrich:
                 if stype == OST.NUMBER:
                     stk.append(OS.convert(p[s], ptype))
                 else:
-                    pass  # TODO ???
+                    pass  # TODO
         INSTRUCTIONS['='] = eq
 
         def gt(self, stk, prgm):
@@ -383,7 +399,7 @@ class Ostrich:
                 if stype == OST.NUMBER:
                     stk.append(OS.convert(p[s:], ptype))
                 else:
-                    pass  # TODO ???
+                    pass  # TODO
         INSTRUCTIONS['>'] = gt
 
         def question(self, stk, prgm):

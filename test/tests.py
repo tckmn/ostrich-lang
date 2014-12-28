@@ -37,7 +37,18 @@ class OstrichTests(unittest.TestCase):
         pass  # TODO
 
     def test_dollar(self):
-        pass  # TODO
+        self.expect('[3 2 4 1 5]$', '[1 2 3 4 5]')
+        self.expect(';[`test``tesu``tess`]$', '[`tess` `test` `tesu`]')
+        self.expect(';[{a}{c}{b}]$', '[{a} {b} {c}]')
+        self.expect(';[[1][3][2]]$', '[[1] [2] [3]]')
+        self.expect(';[]$', '[]')
+
+        self.expect(';`potato`$', '`aooptt`')
+        self.expect(';``$', '``')
+
+        # TODO block
+
+        # TODO stack nth (number)
 
     def test_mod(self):
         pass  # TODO
