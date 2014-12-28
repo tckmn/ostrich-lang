@@ -14,7 +14,7 @@ def uniq(s):
 class Ostrich:
     MAJOR_VERSION = 0
     MINOR_VERSION = 1
-    PATCH_VERSION = 0
+    PATCH_VERSION = 1
     # VERSION_DESC = None
     VERSION_DESC = 'alpha'
 
@@ -390,7 +390,7 @@ class Ostrich:
                 stk.append(int(a == b))
             else:
                 if stype == OST.NUMBER:
-                    stk.append(OS.convert(p[s], ptype))
+                    stk.append(p[s])
                 else:
                     pass  # TODO
         INSTRUCTIONS['='] = eq
@@ -432,9 +432,13 @@ class Ostrich:
 
         def roll(self, stk, prgm):
             count = stk.pop()
-            xs = stk.popn(count)
-            stk.extend(xs[1:])
-            stk.append(xs[0])
+            xs = stk.popn(abs(count))
+            if count < 0:
+                stk.append(xs[-1])
+                stk.extend(xs[:-1])
+            else:
+                stk.extend(xs[1:])
+                stk.append(xs[0])
         INSTRUCTIONS['@'] = roll
 
         def leftbracket(self, stk, prgm):
