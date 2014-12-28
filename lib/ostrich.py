@@ -131,7 +131,12 @@ class Ostrich:
                 elif stype == OST.STRING:
                     pass  # TODO array%string (???)
                 elif stype == OST.BLOCK:
-                    pass  # TODO map
+                    marker = len(stk)
+                    for x in p:
+                        prgm.run(OS.inspect(x))
+                        prgm.run(s)
+                    stk.append(stk[marker:])
+                    del stk[marker:-1]
                 else:
                     # TODO remove ugly code duplication from div()
                     split = []
@@ -186,7 +191,7 @@ class Ostrich:
                 stk.append(x[1:])
                 stk.append(x[0])
             if xt == OST.BLOCK:
-                pass  # TODO ???
+                pass  # TODO block( ???
             if xt == OST.NUMBER:
                 stk.append(x - 1)
         INSTRUCTIONS['('] = leftparen
@@ -213,7 +218,10 @@ class Ostrich:
                 elif stype == OST.STRING:
                     stk.append(s.join(map(OS.inspect, p)))
                 elif stype == OST.BLOCK:
-                    pass  # TODO fold
+                    stk.append(p[0])
+                    for x in p[1:]:
+                        stk.append(x)
+                        prgm.run(s)
                 else:
                     joined = [a[0]]
                     for el in a[1:]: joined.extend(b + [el])
@@ -223,7 +231,10 @@ class Ostrich:
                     for _ in range(s):
                         prgm.run(p)
                 elif stype == OST.STRING:
-                    pass  # TODO fold
+                    stk.append(s[0])
+                    for x in s[1:]:
+                        stk.append(x)
+                        prgm.run(p)
                 else:
                     pass  # TODO block*block (???)
             elif ptype == OST.STRING:
@@ -300,7 +311,9 @@ class Ostrich:
                 elif stype == OST.STRING:
                     pass  # TODO array/string (???)
                 elif stype == OST.BLOCK:
-                    pass  # TODO each
+                    for x in p:
+                        prgm.run(OS.inspect(x))
+                        prgm.run(s)
                 else:
                     split = []
                     prevIdx = 0
@@ -379,7 +392,12 @@ class Ostrich:
             ptype, stype = map(OS.typeof, [p, s])
             if ptype == OST.ARRAY:
                 if stype == OST.BLOCK:
-                    pass  # TODO find
+                    for x in p:
+                        stk.append(x)
+                        prgm.run(s)
+                        if stk.pop():
+                            stk.append(x)
+                            break
                 else:
                     stk.push(p.index(s))
             elif ptype == OST.BLOCK:
