@@ -2,6 +2,7 @@
 
 from collections import defaultdict
 import itertools
+import sys  # sys.exit, sys.stdin, sys.stdout
 
 # utility methods
 def Enum(**enums): return type('Enum', (), enums)
@@ -13,8 +14,8 @@ def uniq(s):
 
 class Ostrich:
     MAJOR_VERSION = 0
-    MINOR_VERSION = 1
-    PATCH_VERSION = 2
+    MINOR_VERSION = 2
+    PATCH_VERSION = 0
     # VERSION_DESC = None
     VERSION_DESC = 'alpha'
 
@@ -25,7 +26,7 @@ class Ostrich:
         # all Ostrich types; also used for state management
         TYPES = Enum(NUMBER=0, STRING=1, BLOCK=2, ARRAY=3)
         # extra states (used for :, etc.)
-        XSTATE = Enum(ASSIGN='_XASGN', RETRIEVE='_XRETR')
+        XSTATE = Enum(ASSIGN='_XASGN')
 
         def typeof(x):
             xt = type(x)
@@ -48,7 +49,7 @@ class Ostrich:
                 return block(OS.tostr(x))
             if to_type == OST.STRING:
                 if from_type == OST.ARRAY:
-                    return ' '.join(map(OS.convert, x))
+                    return ' '.join(map(lambda item: OS.convert(item, to_type), x))
                 if from_type in [OST.NUMBER, OST.STRING, OST.BLOCK]:
                     return str(x)
             if to_type == OST.NUMBER:
@@ -86,7 +87,7 @@ class Ostrich:
     def initialize_instructions():
         def unknowninstr():
             def unknowninstr_inner(self, stk, prgm):
-                return OS.XSTATE.RETRIEVE + self
+                pass
             return unknowninstr_inner
         INSTRUCTIONS = defaultdict(unknowninstr)
 
@@ -488,6 +489,14 @@ class Ostrich:
             return OST.STRING
         INSTRUCTIONS['`'] = backtick
 
+        def letter_p(self, stk, prgm):
+            sys.stdout.write(OS.tostr(stk.pop()))
+        INSTRUCTIONS['p'] = letter_p
+
+        def letter_q(self, stk, prgm):
+            stk.append(sys.stdin.read())
+        INSTRUCTIONS['q'] = letter_q
+
         def leftcurlybracket(self, stk, prgm):
             return OST.BLOCK
         INSTRUCTIONS['{'] = leftcurlybracket
@@ -581,19 +590,19 @@ class Ostrich:
                 self.state = None
 
             else:
-                self.state = Ostrich.INSTRUCTIONS[instr](instr, self.stack, self)
-                if self.state == OST.ARRAY:
-                    markers.append(len(self.stack))
-                elif self.state == -OST.ARRAY:
-                    idx = markers.pop() if markers else 0
-                    self.stack.append(self.stack.popn(-idx))
-                elif type(self.state) is str and self.state.startswith(OS.XSTATE.RETRIEVE):
-                    x = self.variables[self.state[len(OS.XSTATE.RETRIEVE):]]
-                    if x:
-                        if OS.typeof(x) == OST.BLOCK:
-                            code = x + code
-                        else:
-                            self.stack.append(x)
+                var = self.variables[instr]
+                if var:
+                    if OS.typeof(var) == OST.BLOCK:
+                        code = var + code
+                    else:
+                        self.stack.append(var)
+                else:
+                    self.state = Ostrich.INSTRUCTIONS[instr](instr, self.stack, self)
+                    if self.state == OST.ARRAY:
+                        markers.append(len(self.stack))
+                    elif self.state == -OST.ARRAY:
+                        idx = markers.pop() if markers else 0
+                        self.stack.append(self.stack.popn(-idx))
 
         # finished parsing instr's
         # perform final cleanup
@@ -615,8 +624,6 @@ OST = Ostrich.Stack.TYPES
 block = Ostrich.Block
 
 if __name__ == '__main__':
-    import sys  # sys.exit, sys.stdin
-
     # parse command line arguments
     import argparse
     parser = argparse.ArgumentParser()
@@ -630,6 +637,10 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '-e', '--exec', help='execute a string passed as an argument'
+    )
+    parser.add_argument(
+        '-v', '--version', action='store_true',
+        help='get the version of Ostrich that is being run'
     )
 
     args = parser.parse_args()
@@ -661,9 +672,18 @@ Type any command or \\\\help for help.''' % (
             # P
             print(rtn)
             # L
+    elif args.version:
+        print('Ostrich v%d.%d.%d%s' % (
+            Ostrich.MAJOR_VERSION,
+            Ostrich.MINOR_VERSION,
+            Ostrich.PATCH_VERSION,
+            ' (%s)' % Ostrich.VERSION_DESC if Ostrich.VERSION_DESC else ''
+        ))
     elif args.exec:
         # execute code!
         program.run(args.exec)
+        for x in program.stack:
+            sys.stdout.write(OS.tostr(x))
     elif args.filename:
         # resolve path, get code
         code = None
@@ -678,5 +698,7 @@ Type any command or \\\\help for help.''' % (
 
         # execute code!
         program.run(code)
+        for x in program.stack:
+            sys.stdout.write(OS.tostr(x))
     else:
         parser.print_help()

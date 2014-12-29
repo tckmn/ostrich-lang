@@ -1,9 +1,0 @@
-current behavior:
-
-    >>> 10:+; 1 1+
-    2
-
-expected behavior:
-
-    >>> 10:+; 1 1+
-    1 1 10
