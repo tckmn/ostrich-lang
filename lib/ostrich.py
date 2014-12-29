@@ -168,7 +168,7 @@ class Ostrich:
                 if stype == OST.NUMBER:
                     stk.append(p[::s])
                 else:
-                    stk.append(list(filter(None, a.split(b))))
+                    stk.append(list(filter(None, list(a) if b == '' else a.split(b))))
             elif ptype == OST.NUMBER:
                 stk.append(a % b)
         INSTRUCTIONS['%'] = mod
@@ -231,7 +231,7 @@ class Ostrich:
                 if stype == OST.NUMBER:
                     stk.append(p * s)
                 elif stype == OST.STRING:
-                    stk.append(s.join(map(OS.inspect, p)))
+                    stk.append(s.join(map(OS.tostr, p)))
                 elif stype == OST.BLOCK:
                     stk.append(p[0])
                     for x in p[1:]:
@@ -348,7 +348,7 @@ class Ostrich:
                 else:
                     pass  # TODO block/block
             elif ptype == OST.STRING:
-                stk.append(p.split(OS.tostr(s)))
+                stk.append([p[i:i+s] for i in range(0, len(p), s)])
             elif ptype == OST.NUMBER:
                 stk.append(a / b)
         INSTRUCTIONS['/'] = div
@@ -421,11 +421,17 @@ class Ostrich:
                             stk.append(x)
                             break
                 else:
-                    stk.push(p.index(s))
+                    try:
+                        stk.append(p.index(s))
+                    except ValueError:
+                        stk.append(-1)
             elif ptype == OST.BLOCK:
                 pass  # TODO
             elif ptype == OST.STRING:
-                pass  # TODO
+                try:
+                    stk.append(p.index(OS.tostr(s)))
+                except ValueError:
+                    stk.append(-1)
             elif ptype == OST.NUMBER:
                 stk.append(a ** b)
         INSTRUCTIONS['?'] = question
