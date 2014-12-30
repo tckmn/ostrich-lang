@@ -4,7 +4,8 @@
 import sys, os
 sys.path.insert(1, os.path.join(sys.path[0], '..') + '/lib')
 
-import ostrich, unittest
+import ostrich
+import unittest
 
 
 class OstrichTests(unittest.TestCase):
