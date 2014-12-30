@@ -115,7 +115,7 @@ if __name__ == '__main__':
         help='enter an interactive REPL instead of executing code'
     )
     parser.add_argument(
-        '-e', '--exec', help='execute a string passed as an argument'
+        '-e', '--execute', help='execute a string passed as an argument'
     )
     parser.add_argument(
         '-v', '--version', action='store_true',
@@ -124,24 +124,21 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     program = Ostrich()
+    version_string = 'Ostrich v%d.%d.%d%s' % (
+        Ostrich.MAJOR_VERSION,
+        Ostrich.MINOR_VERSION,
+        Ostrich.PATCH_VERSION,
+        ' (%s)' % Ostrich.VERSION_DESC if Ostrich.VERSION_DESC else ''
+    )
     if args.interactive:
-        print('''This is Ostrich v%d.%d.%d%s
-Type any command or \\\\help for help.''' % (
-            Ostrich.MAJOR_VERSION,
-            Ostrich.MINOR_VERSION,
-            Ostrich.PATCH_VERSION,
-            ' (%s)' % Ostrich.VERSION_DESC if Ostrich.VERSION_DESC else ''))
+        print('''This is %s
+Type any command or \\\\help for help.''' % version_string)
         ost_repl.ost_repl(program)
     elif args.version:
-        print('Ostrich v%d.%d.%d%s' % (
-            Ostrich.MAJOR_VERSION,
-            Ostrich.MINOR_VERSION,
-            Ostrich.PATCH_VERSION,
-            ' (%s)' % Ostrich.VERSION_DESC if Ostrich.VERSION_DESC else ''
-        ))
-    elif args.exec:
+        print(version_string)
+    elif args.execute:
         # execute code!
-        program.run(args.exec)
+        program.run(args.execute)
         for x in program.stack:
             sys.stdout.write(OS.tostr(x))
     elif args.filename:
@@ -153,7 +150,7 @@ Type any command or \\\\help for help.''' % (
             import os
             path = os.path.abspath(args.filename)
             if not os.path.exists(path):
-                sys.exit('Err: Path %s does not exist' % path)
+                sys.exit('Ostrich: Path %s does not exist' % path)
             code = open(path).read()
 
         # execute code!
