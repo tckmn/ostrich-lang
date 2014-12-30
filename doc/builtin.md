@@ -12,7 +12,7 @@ Whitespace is usually ignored in Ostrich, but be careful not to accidentally ass
 
 ## `!`
 
-Logical not. `0`, ` `` `, `[]`, `{}` return `1`; everything else returns `0`.
+Logical not. `0`, ``` `` ```, `[]`, `{}` return `1`; everything else returns `0`.
 
     >>> 0! ``! []! {}!
     1 1 1 1
@@ -123,15 +123,15 @@ TODO
 
 TODO
 
-## `f`
-
-TODO
-
 ## `p`
 
 TODO
 
 ## `q`
+
+TODO
+
+## `v`
 
 TODO
 
