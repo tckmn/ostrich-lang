@@ -14,7 +14,7 @@ def uniq(s):
 
 class Ostrich:
     MAJOR_VERSION = 0
-    MINOR_VERSION = 2
+    MINOR_VERSION = 3
     PATCH_VERSION = 0
     # VERSION_DESC = None
     VERSION_DESC = 'alpha'
@@ -26,7 +26,7 @@ class Ostrich:
         # all Ostrich types; also used for state management
         TYPES = Enum(NUMBER=0, STRING=1, BLOCK=2, ARRAY=3)
         # extra states (used for :, etc.)
-        XSTATE = Enum(ASSIGN='_XASGN')
+        XSTATE = Enum(ASSIGN='_XASGN', EXIT='_XEXIT')
 
         def typeof(x):
             xt = type(x)
@@ -91,7 +91,7 @@ class Ostrich:
             return unknowninstr_inner
         INSTRUCTIONS = defaultdict(unknowninstr)
 
-        # TODO things not in GS: A-Za-z_#
+        # TODO things not in GS: A-Za-z_
 
         def whitespace(self, stk, prgm):
             pass
@@ -109,6 +109,16 @@ class Ostrich:
         def quote(self, stk, prgm):
             pass  # TODO "
         INSTRUCTIONS['"'] = quote
+
+        def arrset(self, stk, prgm):
+            arr, idx, val = stk.popn(3)
+            atype = OS.typeof(arr)
+            if idx >= len(arr):
+                arr += (' ' if atype == OST.STRING else [0]) * (idx - len(arr) + 1)
+            val = OS.convert(val, atype)
+            arr = arr[:idx] + val + arr[idx+1:]
+            stk.append(arr)
+        INSTRUCTIONS['#'] = arrset
 
         def dollar(self, stk, prgm):
             x = stk.pop()
@@ -155,7 +165,7 @@ class Ostrich:
                     stk.append(list(filter(None, split)))
             elif ptype == OST.BLOCK:
                 if stype == OST.NUMBER:
-                    pass  # TODO block/number
+                    pass  # TODO block%number
                 elif stype == OST.STRING:
                     marker = len(stk)
                     for x in s:
@@ -164,7 +174,7 @@ class Ostrich:
                     stk.append(''.join(stk[marker:]))
                     del stk[marker:-1]
                 else:
-                    pass  # TODO block/block
+                    pass  # TODO block%block
             elif ptype == OST.STRING:
                 if stype == OST.NUMBER:
                     stk.append(p[::s])
@@ -207,7 +217,8 @@ class Ostrich:
                 stk.append(x[1:])
                 stk.append(x[0])
             if xt == OST.BLOCK:
-                pass  # TODO block(
+                prgm.run(x)
+                while stk.pop(): prgm.run(x)
             if xt == OST.NUMBER:
                 stk.append(x - 1)
         INSTRUCTIONS['('] = leftparen
@@ -219,7 +230,8 @@ class Ostrich:
                 stk.append(x[:-1])
                 stk.append(x[-1])
             if xt == OST.BLOCK:
-                pass  # TODO block)
+                prgm.run(x)
+                while not stk.pop(): prgm.run(x)
             if xt == OST.NUMBER:
                 stk.append(x + 1)
         INSTRUCTIONS[')'] = rightparen
@@ -427,7 +439,12 @@ class Ostrich:
                     except ValueError:
                         stk.append(-1)
             elif ptype == OST.BLOCK:
-                pass  # TODO
+                a, b, c = stk.pop(), a, b
+                toRun = b if a else c
+                if OS.typeof(toRun) == OST.BLOCK:
+                    prgm.run(toRun)
+                else:
+                    stk.append(toRun)
             elif ptype == OST.STRING:
                 try:
                     stk.append(p.index(OS.tostr(s)))
@@ -496,6 +513,10 @@ class Ostrich:
         def letter_q(self, stk, prgm):
             stk.append(sys.stdin.read())
         INSTRUCTIONS['q'] = letter_q
+
+        def letter_z(self, stk, prgm):
+            return OS.XSTATE.EXIT
+        INSTRUCTIONS['z'] = letter_z
 
         def leftcurlybracket(self, stk, prgm):
             return OST.BLOCK
@@ -603,6 +624,8 @@ class Ostrich:
                     elif self.state == -OST.ARRAY:
                         idx = markers.pop() if markers else 0
                         self.stack.append(self.stack.popn(-idx))
+                    elif self.state == OS.XSTATE.EXIT:
+                        code = ''
 
         # finished parsing instr's
         # perform final cleanup

@@ -36,6 +36,9 @@ class OstrichTests(unittest.TestCase):
     def test_quote(self):
         pass  # TODO
 
+    def test_arrset(self):
+        pass  # TODO
+
     def test_dollar(self):
         self.expect('[3 2 4 1 5]$', '[1 2 3 4 5]')
         self.expect(';[`test``tesu``tess`]$', '[`tess` `test` `tesu`]')
@@ -160,6 +163,9 @@ class OstrichTests(unittest.TestCase):
         pass  # TODO
 
     def test_letter_q(self):
+        pass  # TODO
+
+    def test_letter_z(self):
         pass  # TODO
 
     def test_leftcurlybracket(self):
