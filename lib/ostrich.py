@@ -15,7 +15,7 @@ def uniq(s):
 class Ostrich:
     MAJOR_VERSION = 0
     MINOR_VERSION = 3
-    PATCH_VERSION = 0
+    PATCH_VERSION = 1
     # VERSION_DESC = None
     VERSION_DESC = 'alpha'
 
@@ -439,12 +439,7 @@ class Ostrich:
                     except ValueError:
                         stk.append(-1)
             elif ptype == OST.BLOCK:
-                a, b, c = stk.pop(), a, b
-                toRun = b if a else c
-                if OS.typeof(toRun) == OST.BLOCK:
-                    prgm.run(toRun)
-                else:
-                    stk.append(toRun)
+                pass  # TODO
             elif ptype == OST.STRING:
                 try:
                     stk.append(p.index(OS.tostr(s)))
@@ -513,6 +508,15 @@ class Ostrich:
         def letter_q(self, stk, prgm):
             stk.append(sys.stdin.read())
         INSTRUCTIONS['q'] = letter_q
+
+        def letter_v(self, stk, prgm):
+            a, b, c = stk.popn(3)
+            toRun = b if c else a
+            if OS.typeof(toRun) == OST.BLOCK:
+                prgm.run(toRun)
+            else:
+                stk.append(toRun)
+        INSTRUCTIONS['f'] = letter_f
 
         def letter_z(self, stk, prgm):
             return OS.XSTATE.EXIT
@@ -687,7 +691,7 @@ Type any command or \\\\help for help.''' % (
             if code[:2] == '\\\\':
                 cmd = code[2:]
                 if cmd == 'help':
-                    rtn = 'Please see README.md. (this will give actual help soon)'
+                    rtn = 'Please see README.md for general information about Ostrich, type \\\\commands for a list of all extended commands, or type \\\\help COMMANDNAME for help on a specific command.'
                 else:
                     rtn = 'Unknown extended command `%s\'.' % cmd
             else:

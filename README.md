@@ -8,7 +8,7 @@ Ostrich is a stack-based language, which means most instructions act upon the st
 
 ## The Instructions
 
-A list of instructions and what they do can be found in the `instructions.md` file.
+A list of instructions and what they do can be found in the `doc` directory.
 
 ## Name
 

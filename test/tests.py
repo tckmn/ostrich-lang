@@ -165,6 +165,9 @@ class OstrichTests(unittest.TestCase):
     def test_letter_q(self):
         pass  # TODO
 
+    def test_letter_v(self):
+        pass  # TODO
+
     def test_letter_z(self):
         pass  # TODO
 
