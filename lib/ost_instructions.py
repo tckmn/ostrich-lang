@@ -428,14 +428,18 @@ def ost_instructions():
         a, b = stk.popn(2)
         at = OS.typeof(a)
         if at == OST.ARRAY:
-            pass  # TODO
+            num = 0
+            for d in a:
+                num *= b
+                num += d
+            stk.append(num)
         elif at == OST.NUMBER:
             arr = []
             while a:
                 a, val = divmod(a, b)
                 arr.append(val)
             stk.append(list(reversed(arr)))
-    INSTRUCTIONS['b'] = letter_b
+    INSTRUCTIONS['B'] = letter_B
 
     def letter_E(self, stk, prgm):
         return OS.XSTATE.EXIT
