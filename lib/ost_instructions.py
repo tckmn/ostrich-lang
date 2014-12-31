@@ -424,7 +424,7 @@ def ost_instructions():
         return OST.STRING
     INSTRUCTIONS['`'] = backtick
 
-    def letter_b(self, stk, prgm):
+    def letter_B(self, stk, prgm):
         a, b = stk.popn(2)
         at = OS.typeof(a)
         if at == OST.ARRAY:
@@ -437,32 +437,32 @@ def ost_instructions():
             stk.append(list(reversed(arr)))
     INSTRUCTIONS['b'] = letter_b
 
-    def letter_i(self, stk, prgm):
-        stk.append(sys.stdin.read())
-    INSTRUCTIONS['i'] = letter_i
-
-    def letter_p(self, stk, prgm):
-        sys.stdout.write(OS.tostr(stk.pop()))
-    INSTRUCTIONS['p'] = letter_p
-
-    def letter_q(self, stk, prgm):
+    def letter_E(self, stk, prgm):
         return OS.XSTATE.EXIT
-    INSTRUCTIONS['q'] = letter_q
+    INSTRUCTIONS['E'] = letter_E
 
-    def letter_r(self, stk, prgm):
-        stk.append(random.random())
-    INSTRUCTIONS['r'] = letter_r
-
-    def letter_v(self, stk, prgm):
+    def letter_I(self, stk, prgm):
         a, b, c = stk.popn(3)
         toRun = b if c else a
         if OS.typeof(toRun) == OST.BLOCK:
             prgm.run(toRun)
         else:
             stk.append(toRun)
-    INSTRUCTIONS['v'] = letter_v
+    INSTRUCTIONS['I'] = letter_I
 
-    def letter_z(self, stk, prgm):
+    def letter_P(self, stk, prgm):
+        sys.stdout.write(OS.tostr(stk.pop()))
+    INSTRUCTIONS['P'] = letter_P
+
+    def letter_Q(self, stk, prgm):
+        stk.append(sys.stdin.read())
+    INSTRUCTIONS['Q'] = letter_Q
+
+    def letter_R(self, stk, prgm):
+        stk.append(random.random())
+    INSTRUCTIONS['R'] = letter_R
+
+    def letter_Z(self, stk, prgm):
         l = stk.pop()
         allStr = all(OS.typeof(x) == OST.STRING for x in l)
 
@@ -473,7 +473,7 @@ def ost_instructions():
             transposed = map(list, transposed)
 
         stk.append(list(transposed))
-    INSTRUCTIONS['z'] = letter_z
+    INSTRUCTIONS['Z'] = letter_Z
 
     def leftcurlybracket(self, stk, prgm):
         return OST.BLOCK

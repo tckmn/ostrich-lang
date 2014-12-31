@@ -17,8 +17,8 @@ def uniq(s):
 
 class Ostrich:
     MAJOR_VERSION = 0
-    MINOR_VERSION = 3
-    PATCH_VERSION = 2
+    MINOR_VERSION = 4
+    PATCH_VERSION = 0
     # VERSION_DESC = None
     VERSION_DESC = 'alpha'
 
