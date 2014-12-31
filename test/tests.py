@@ -160,16 +160,25 @@ class OstrichTests(unittest.TestCase):
         self.expect(';`', '``')
         # TODO escaping (not implemented)
 
-    def test_letter_p(self):
+    def test_letter_B(self):
         pass  # TODO
 
-    def test_letter_q(self):
+    def test_letter_E(self):
         pass  # TODO
 
-    def test_letter_v(self):
+    def test_letter_G(self):
         pass  # TODO
 
-    def test_letter_z(self):
+    def test_letter_I(self):
+        pass  # TODO
+
+    def test_letter_P(self):
+        pass  # TODO
+
+    def test_letter_R(self):
+        pass  # TODO
+
+    def test_letter_Z(self):
         pass  # TODO
 
     def test_leftcurlybracket(self):
