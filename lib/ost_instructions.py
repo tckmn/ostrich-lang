@@ -1,5 +1,5 @@
 from collections import defaultdict
-import random
+import random, sys, time, re
 
 import ost_stack
 
@@ -10,8 +10,6 @@ def ost_instructions():
             pass
         return unknowninstr_inner
     INSTRUCTIONS = defaultdict(unknowninstr)
-
-    # TODO things not in GS: A-Za-z_
 
     def whitespace(self, stk, prgm):
         pass
@@ -27,7 +25,7 @@ def ost_instructions():
     INSTRUCTIONS['!'] = negate
 
     def quote(self, stk, prgm):
-        pass  # TODO "
+        return OS.XSTATE.CHAR
     INSTRUCTIONS['"'] = quote
 
     def arrset(self, stk, prgm):
@@ -420,9 +418,17 @@ def ost_instructions():
             stk.append(a ^ b)
     INSTRUCTIONS['^'] = bitxor
 
+    def underscore(self, stk, prgm):
+        return OS.XSTATE.CHARBLOCK
+    INSTRUCTIONS['_'] = underscore
+
     def backtick(self, stk, prgm):
         return OST.STRING
     INSTRUCTIONS['`'] = backtick
+
+    def letter_A(self, stk, prgm):
+        stk.append(abs(stk.pop()))
+    INSTRUCTIONS['A'] = letter_A
 
     def letter_B(self, stk, prgm):
         a, b = stk.popn(2)
@@ -441,12 +447,25 @@ def ost_instructions():
             stk.append(list(reversed(arr)))
     INSTRUCTIONS['B'] = letter_B
 
+    def letter_C(self, stk, prgm):
+        stk.append(int(stk.pop()) + 1)
+    INSTRUCTIONS['C'] = letter_C
+
     def letter_E(self, stk, prgm):
-        return OS.XSTATE.EXIT
+        stk.append(eval(stk.pop()))
     INSTRUCTIONS['E'] = letter_E
 
+    def letter_F(self, stk, prgm):
+        x = stk.pop()
+        xt = OS.typeof(x)
+        if xt == OST.NUMBER:
+            stk.append(int(x))
+        elif xt == OST.ARRAY:
+            stk.append(x[0])
+    INSTRUCTIONS['F'] = letter_F
+
     def letter_G(self, stk, prgm):
-        stk.append(sys.stdin.read())
+        stk.append(input())
     INSTRUCTIONS['G'] = letter_G
 
     def letter_I(self, stk, prgm):
@@ -458,13 +477,36 @@ def ost_instructions():
             stk.append(toRun)
     INSTRUCTIONS['I'] = letter_I
 
+    def letter_M(self, stk, prgm):
+        s, pattern = stk.popn(2)
+        stk.append(re.findall(pattern, s))
+    INSTRUCTIONS['M'] = letter_M
+
     def letter_P(self, stk, prgm):
         sys.stdout.write(OS.tostr(stk.pop()))
     INSTRUCTIONS['P'] = letter_P
 
+    def letter_Q(self, stk, prgm):
+        return OS.XSTATE.EXIT
+    INSTRUCTIONS['Q'] = letter_Q
+
     def letter_R(self, stk, prgm):
         stk.append(random.random())
     INSTRUCTIONS['R'] = letter_R
+
+    def letter_S(self, stk, prgm):
+        stk.append(sys.stdin.read())
+    INSTRUCTIONS['S'] = letter_S
+
+    def letter_T(self, stk, prgm):
+        stk.append(time.time())
+    INSTRUCTIONS['T'] = letter_T
+
+    def letter_X(self, stk, prgm):
+        s, pattern, repl = stk.popn(3)
+        # TODO handle repl being a block
+        stk.append(re.sub(pattern, repl, s))
+    INSTRUCTIONS['X'] = letter_X
 
     def letter_Z(self, stk, prgm):
         l = stk.pop()
@@ -525,6 +567,21 @@ def ost_instructions():
     INSTRUCTIONS['~'] = tilde
 
     return INSTRUCTIONS
+
+def ost_variables():
+    variables = defaultdict(lambda: None)
+
+    variables['a'] = []
+    variables['b'] = block('')
+    variables['l'] = '\n'
+    variables['m'] = -1
+    variables['n'] = 0
+    variables['o'] = 1
+    variables['p'] = 2
+    variables['q'] = 3
+    variables['s'] = ''
+
+    return variables
 
 # just for convenience
 OS = ost_stack.Stack

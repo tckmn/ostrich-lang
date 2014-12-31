@@ -24,7 +24,7 @@ class Ostrich:
 
     def __init__(self):
         self.stack = OS()
-        self.variables = defaultdict(lambda: None)
+        self.variables = ost_instructions.ost_variables()
         self.state = None
 
     def run(self, code):
@@ -66,9 +66,17 @@ class Ostrich:
                 self.variables[instr] = self.stack[-1]
                 self.state = None
 
+            elif self.state == OS.XSTATE.CHAR:
+                self.stack.append(instr)
+                self.state = None
+
+            elif self.state == OS.XSTATE.CHARBLOCK:
+                self.stack.append(block(instr))
+                self.state = None
+
             else:
                 var = self.variables[instr]
-                if var:
+                if var is not None:
                     if OS.typeof(var) == OST.BLOCK:
                         code = var + code
                     else:

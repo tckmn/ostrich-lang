@@ -6,7 +6,8 @@ class Stack(list):
     # all Ostrich types; also used for state management
     TYPES = Enum(NUMBER=0, STRING=1, BLOCK=2, ARRAY=3)
     # extra states (used for :, etc.)
-    XSTATE = Enum(ASSIGN='_XASGN', EXIT='_XEXIT')
+    XSTATE = Enum(ASSIGN='_XASGN', EXIT='_XEXIT', CHAR='_XCHAR',
+        CHARBLOCK = '_XCHBK')
 
     def typeof(x):
         xt = type(x)
