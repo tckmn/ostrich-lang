@@ -1,4 +1,5 @@
 from collections import defaultdict
+import random
 
 import ost_stack
 
@@ -423,13 +424,34 @@ def ost_instructions():
         return OST.STRING
     INSTRUCTIONS['`'] = backtick
 
+    def letter_b(self, stk, prgm):
+        a, b = stk.popn(2)
+        at = OS.typeof(a)
+        if at == OST.ARRAY:
+            pass  # TODO
+        elif at == OST.NUMBER:
+            arr = []
+            while a:
+                a, val = divmod(a, b)
+                arr.append(val)
+            stk.append(list(reversed(arr)))
+    INSTRUCTIONS['b'] = letter_b
+
+    def letter_i(self, stk, prgm):
+        stk.append(sys.stdin.read())
+    INSTRUCTIONS['i'] = letter_i
+
     def letter_p(self, stk, prgm):
         sys.stdout.write(OS.tostr(stk.pop()))
     INSTRUCTIONS['p'] = letter_p
 
     def letter_q(self, stk, prgm):
-        stk.append(sys.stdin.read())
+        return OS.XSTATE.EXIT
     INSTRUCTIONS['q'] = letter_q
+
+    def letter_r(self, stk, prgm):
+        stk.append(random.random())
+    INSTRUCTIONS['r'] = letter_r
 
     def letter_v(self, stk, prgm):
         a, b, c = stk.popn(3)
@@ -441,7 +463,16 @@ def ost_instructions():
     INSTRUCTIONS['v'] = letter_v
 
     def letter_z(self, stk, prgm):
-        return OS.XSTATE.EXIT
+        l = stk.pop()
+        allStr = all(OS.typeof(x) == OST.STRING for x in l)
+
+        transposed = zip(*l)
+        if allStr:
+            transposed = map(''.join, transposed)
+        else:
+            transposed = map(list, transposed)
+
+        stk.append(list(transposed))
     INSTRUCTIONS['z'] = letter_z
 
     def leftcurlybracket(self, stk, prgm):

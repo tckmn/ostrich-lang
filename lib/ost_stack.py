@@ -16,7 +16,7 @@ class Stack(list):
             return OST.BLOCK
         if xt is str:
             return OST.STRING
-        if xt is int:
+        if xt is int or xt is float:
             return OST.NUMBER
 
     def convert(x, to_type):
@@ -48,7 +48,7 @@ class Stack(list):
         if xt == OST.STRING:
             return '`%s`' % x
         if xt == OST.NUMBER:
-            return '%d' % x
+            return ('%d' if type(x) is int else '%f') % x
 
     # pop n elements
     def popn(self, n):
