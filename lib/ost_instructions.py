@@ -92,7 +92,7 @@ def ost_instructions():
                 for x in s:
                     prgm.run(OS.inspect(x))
                     prgm.run(p)
-                stk.append(''.join(stk[marker:]))
+                stk.append(stk[marker:])
                 del stk[marker:-1]
             else:
                 pass  # TODO block%block
