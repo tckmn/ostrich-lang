@@ -441,6 +441,10 @@ def ost_instructions():
         return OS.XSTATE.EXIT
     INSTRUCTIONS['E'] = letter_E
 
+    def letter_G(self, stk, prgm):
+        stk.append(sys.stdin.read())
+    INSTRUCTIONS['G'] = letter_G
+
     def letter_I(self, stk, prgm):
         a, b, c = stk.popn(3)
         toRun = b if c else a
@@ -453,10 +457,6 @@ def ost_instructions():
     def letter_P(self, stk, prgm):
         sys.stdout.write(OS.tostr(stk.pop()))
     INSTRUCTIONS['P'] = letter_P
-
-    def letter_Q(self, stk, prgm):
-        stk.append(sys.stdin.read())
-    INSTRUCTIONS['Q'] = letter_Q
 
     def letter_R(self, stk, prgm):
         stk.append(random.random())
