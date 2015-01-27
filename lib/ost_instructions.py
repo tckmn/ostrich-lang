@@ -4,6 +4,13 @@ import random, sys, time, re
 import ost_stack
 
 
+# utility methods
+def uniq(s):
+    # http://stackoverflow.com/q/480214/1223693
+    seen = set()
+    return [x for x in s if x not in seen and not seen.add(x)]
+
+
 def ost_instructions():
     def unknowninstr():
         def unknowninstr_inner(self, stk, prgm):
@@ -51,7 +58,10 @@ def ost_instructions():
             def sKey(el):
                 prgm.run(OS.inspect(el))
                 prgm.run(x)
-                return stk.pop()
+                stklen = len(stk)
+                rtn = stk.pop()
+                while len(stk) > stklen: stk.pop()
+                return rtn
 
             stk.append(sorted(toSort, key=sKey))
         if xt == OST.NUMBER:
@@ -282,7 +292,10 @@ def ost_instructions():
             else:
                 pass  # TODO block/block
         elif ptype == OST.STRING:
-            stk.append([p[i:i+s] for i in range(0, len(p), s)])
+            if stype == OST.NUMBER:
+                stk.append([p[i:i+s] for i in range(0, len(p), s)])
+            else:
+                stk.append(p.split(s))
         elif ptype == OST.NUMBER:
             stk.append(a / b)
     INSTRUCTIONS['/'] = div
@@ -451,6 +464,10 @@ def ost_instructions():
         stk.append(int(stk.pop()) + 1)
     INSTRUCTIONS['C'] = letter_C
 
+    def letter_D(self, stk, prgm):
+        stk.append(time.time())
+    INSTRUCTIONS['D'] = letter_D
+
     def letter_E(self, stk, prgm):
         stk.append(eval(stk.pop()))
     INSTRUCTIONS['E'] = letter_E
@@ -461,12 +478,19 @@ def ost_instructions():
         if xt == OST.NUMBER:
             stk.append(int(x))
         elif xt == OST.ARRAY:
-            stk.append(x[0])
+            for i, _ in enumerate(x):
+                while type(x[i]) is list:
+                    x[i:i+1] = x[i]
+            stk.append(x)
     INSTRUCTIONS['F'] = letter_F
 
     def letter_G(self, stk, prgm):
         stk.append(input())
     INSTRUCTIONS['G'] = letter_G
+
+    def letter_H(self, stk, prgm):
+        stk.append(stk.pop()[0])
+    INSTRUCTIONS['H'] = letter_H
 
     def letter_I(self, stk, prgm):
         a, b, c = stk.popn(3)
@@ -499,13 +523,23 @@ def ost_instructions():
     INSTRUCTIONS['S'] = letter_S
 
     def letter_T(self, stk, prgm):
-        stk.append(time.time())
+        stk.append(stk.pop()[-1])
     INSTRUCTIONS['T'] = letter_T
+
+    def letter_W(self, stk, prgm):
+        stk.append(stk.popn(stk.pop()))
+    INSTRUCTIONS['W'] = letter_W
 
     def letter_X(self, stk, prgm):
         s, pattern, repl = stk.popn(3)
-        # TODO handle repl being a block
-        stk.append(re.sub(pattern, repl, s))
+        if OS.typeof(repl) == OST.BLOCK:
+            def replFunc(m):
+                stk.append(m.group())
+                prgm.run(repl)
+                return OS.tostr(stk.pop())
+            stk.append(re.sub(pattern, replFunc, s))
+        else:
+            stk.append(re.sub(pattern, OS.tostr(repl), s))
     INSTRUCTIONS['X'] = letter_X
 
     def letter_Z(self, stk, prgm):

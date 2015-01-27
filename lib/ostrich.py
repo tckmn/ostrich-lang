@@ -8,13 +8,6 @@ import sys  # sys.exit, sys.stdin, sys.stdout
 import ost_instructions, ost_repl, ost_stack
 
 
-# utility methods
-def uniq(s):
-    # http://stackoverflow.com/q/480214/1223693
-    seen = set()
-    return [x for x in s if x not in seen and not seen.add(x)]
-
-
 class Ostrich:
     MAJOR_VERSION = 0
     MINOR_VERSION = 5

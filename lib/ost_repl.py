@@ -1,6 +1,7 @@
 import readline  # better input()
 import sys       # sys.exit()
 from collections import defaultdict
+import traceback
 
 
 repl_settings = {
@@ -21,7 +22,10 @@ def ost_repl(program):
             name, *args = cmd.split()
             rtn = COMMANDS[name](' '.join(args))
         else:
-            rtn = program.run(code)
+            try:
+                rtn = program.run(code)
+            except Exception as e:
+                rtn = 'Internal python error:\n' + traceback.format_exc()[:-1]
         # P
         print(rtn)
         # L
