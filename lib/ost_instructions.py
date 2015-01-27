@@ -19,11 +19,27 @@ def ost_instructions():
     INSTRUCTIONS = defaultdict(unknowninstr)
 
     def whitespace(self, stk, prgm):
+        '''
+        Whitespace is usually ignored in Ostrich, but be careful not to
+        accidentally assign to it!
+
+            >>> {`...`+}: d;`wait` `what` `huh?`
+            `wait...` `what...` `huh?`
+        '''
         pass
     INSTRUCTIONS['\n'] = whitespace
     INSTRUCTIONS[' '] = whitespace
 
     def negate(self, stk, prgm):
+        '''
+        Logical not. `0`, ``` `` ```, `[]`, `{}` return `1`; everything else
+        returns `0`.
+
+            >>> 0! ``! []! {}!
+            1 1 1 1
+            >>> ;;;; 1! ` `! [``]! {foo}!
+            0 0 0 0
+        '''
         x = stk.pop()
         if x in [0, '', block(''), []]:
             stk.append(1)
