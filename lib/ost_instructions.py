@@ -526,6 +526,12 @@ def ost_instructions():
         stk.append(stk.pop()[-1])
     INSTRUCTIONS['T'] = letter_T
 
+    def letter_V(self, stk, prgm):
+        a, b = stk.popn(2)
+        stk.push(a / b)
+        stk.push(a % b)
+    INSTRUCTIONS['V'] = letter_V
+
     def letter_W(self, stk, prgm):
         stk.append(stk.popn(stk.pop()))
     INSTRUCTIONS['W'] = letter_W
