@@ -30,6 +30,5 @@ with open(OUTFILE, 'w') as f:
         # formatting special cases
         if k == ' ': k = '\\n`, ` '
         if k == '`': k = '` ` `'
-        if k == '\\': k = '\\\\'
 
         print('## `%s`\n\n%s\n' % (k, doc), file=f)
