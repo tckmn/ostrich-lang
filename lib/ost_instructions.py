@@ -511,6 +511,9 @@ def ost_instructions():
     INSTRUCTIONS['B'] = letter_B
 
     def letter_C(self, stk, prgm):
+        '''
+        Ceiling for numbers.
+        '''
         stk.append(math.ceil(stk.pop()))
     INSTRUCTIONS['C'] = letter_C
 
@@ -523,6 +526,9 @@ def ost_instructions():
     INSTRUCTIONS['E'] = letter_E
 
     def letter_F(self, stk, prgm):
+        '''
+        Floor for numbers.
+        '''
         x = stk.pop()
         xt = OS.typeof(x)
         if xt == OST.NUMBER:
@@ -535,10 +541,21 @@ def ost_instructions():
     INSTRUCTIONS['F'] = letter_F
 
     def letter_G(self, stk, prgm):
+        '''
+        Get a line of input.
+        '''
         stk.append(input())
     INSTRUCTIONS['G'] = letter_G
 
     def letter_H(self, stk, prgm):
+        '''
+        Head for arrays and strings (get the first element).
+
+            >>> `foobar`H
+            `f`
+            >>> [1 2 3]H
+            `f` 1
+        '''
         stk.append(stk.pop()[0])
     INSTRUCTIONS['H'] = letter_H
 
@@ -579,13 +596,27 @@ def ost_instructions():
     INSTRUCTIONS['S'] = letter_S
 
     def letter_T(self, stk, prgm):
+        '''
+        Tail for arrays and strings (get the last element).
+
+            >>> `foobar`T
+            `r`
+            >>> [1 2 3]T
+            `r` 3
+        '''
         stk.append(stk.pop()[-1])
     INSTRUCTIONS['T'] = letter_T
 
     def letter_V(self, stk, prgm):
+        '''
+        Divmod (pushes integer division and modulo result at the same time).
+
+            >>> 10 3 V
+            3 1
+        '''
         a, b = stk.popn(2)
-        stk.push(a / b)
-        stk.push(a % b)
+        stk.append(a // b)
+        stk.append(a % b)
     INSTRUCTIONS['V'] = letter_V
 
     def letter_W(self, stk, prgm):
