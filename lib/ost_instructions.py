@@ -1,5 +1,5 @@
 from collections import defaultdict
-import random, sys, time, re
+import random, sys, time, re, math
 
 import ost_stack
 
@@ -48,6 +48,12 @@ def ost_instructions():
     INSTRUCTIONS['!'] = negate
 
     def quote(self, stk, prgm):
+        '''
+        Declares a single character literal. `"x` is shorthand for `` `x` ``.
+
+            >>> "a "b "c
+            `a` `b` `c`
+        '''
         return OS.XSTATE.CHAR
     INSTRUCTIONS['"'] = quote
 
@@ -273,6 +279,14 @@ def ost_instructions():
     INSTRUCTIONS['-'] = minus
 
     def duplicate(self, stk, prgm):
+        '''
+        Duplicates the top element of the stack.
+
+            >>> 1 2 . 3 4 . . 5 .
+            1 2 2 3 4 4 4 5 5
+            >>> ...6...
+            1 2 2 3 4 4 4 5 5 5 5 5 6 6 6 6
+        '''
         if stk: stk.append(stk[-1])
     INSTRUCTIONS['.'] = duplicate
 
@@ -329,6 +343,14 @@ def ost_instructions():
     INSTRUCTIONS[':'] = assign
 
     def pop(self, stk, prgm):
+        '''
+        Removes the top element of the stack.
+
+            >>> 42 0 1337
+            42 0 1337
+            >>> ;;
+            42
+        '''
         if stk: stk.pop()
     INSTRUCTIONS[';'] = pop
 
@@ -415,6 +437,12 @@ def ost_instructions():
     INSTRUCTIONS['['] = leftbracket
 
     def swaptwo(self, stk, prgm):
+        '''
+        Swap the top two stack elements.
+
+           >>> 1 2 3 4 5 \\
+           1 2 3 5 4
+        '''
         stk.extend([stk.pop(), stk.pop()])
     INSTRUCTIONS['\\'] = swaptwo
 
@@ -448,6 +476,12 @@ def ost_instructions():
     INSTRUCTIONS['^'] = bitxor
 
     def underscore(self, stk, prgm):
+        '''
+        Declares a single character block. `_x` is shorthand for `{x}`.
+
+            >>> _a _b _c
+            {a} {b} {c}
+        '''
         return OS.XSTATE.CHARBLOCK
     INSTRUCTIONS['_'] = underscore
 
@@ -477,7 +511,7 @@ def ost_instructions():
     INSTRUCTIONS['B'] = letter_B
 
     def letter_C(self, stk, prgm):
-        stk.append(int(stk.pop()) + 1)
+        stk.append(math.ceil(stk.pop()))
     INSTRUCTIONS['C'] = letter_C
 
     def letter_D(self, stk, prgm):
@@ -492,7 +526,7 @@ def ost_instructions():
         x = stk.pop()
         xt = OS.typeof(x)
         if xt == OST.NUMBER:
-            stk.append(int(x))
+            stk.append(math.floor(x))
         elif xt == OST.ARRAY:
             for i, _ in enumerate(x):
                 while type(x[i]) is list:
@@ -531,6 +565,12 @@ def ost_instructions():
     INSTRUCTIONS['Q'] = letter_Q
 
     def letter_R(self, stk, prgm):
+        '''
+        Generates a random number in the range [0, 1) (greater than or equal
+        to 0, and less than one).
+
+            >>> R
+        '''
         stk.append(random.random())
     INSTRUCTIONS['R'] = letter_R
 
@@ -549,6 +589,16 @@ def ost_instructions():
     INSTRUCTIONS['V'] = letter_V
 
     def letter_W(self, stk, prgm):
+        '''
+        Wrap the top `n` stack elements.
+
+            >>> 1 2 3 4 5 3W
+            1 2 [3 4 5]
+            >>> 2W
+            1 [2 [3 4 5]]
+            >>> 6 7 8 1W
+            1 [2 [3 4 5]] 6 7 [8]
+        '''
         stk.append(stk.popn(stk.pop()))
     INSTRUCTIONS['W'] = letter_W
 
