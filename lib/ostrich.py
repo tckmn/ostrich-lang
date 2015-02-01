@@ -10,7 +10,7 @@ import ost_instructions, ost_repl, ost_stack
 
 class Ostrich:
     MAJOR_VERSION = 0
-    MINOR_VERSION = 6
+    MINOR_VERSION = 7
     PATCH_VERSION = 0
     # VERSION_DESC = None
     VERSION_DESC = 'alpha'

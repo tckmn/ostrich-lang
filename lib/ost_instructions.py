@@ -58,6 +58,9 @@ def ost_instructions():
     INSTRUCTIONS['"'] = quote
 
     def arrset(self, stk, prgm):
+        '''
+        Array set.
+        '''
         arr, idx, val = stk.popn(3)
         atype = OS.typeof(arr)
         if idx >= len(arr):
@@ -68,6 +71,9 @@ def ost_instructions():
     INSTRUCTIONS['#'] = arrset
 
     def dollar(self, stk, prgm):
+        '''
+        Sort, stack nth.
+        '''
         x = stk.pop()
         xt = OS.typeof(x)
         if xt == OST.ARRAY:
@@ -138,6 +144,9 @@ def ost_instructions():
     INSTRUCTIONS['%'] = mod
 
     def bitand(self, stk, prgm):
+        '''
+        Bitwise/setwise and.
+        '''
         a, b = stk.popn(2)
         ptype = OS.typeof(OS.byprec([a, b])[0])
 
@@ -160,6 +169,9 @@ def ost_instructions():
     INSTRUCTIONS['&'] = bitand
 
     def inspect(self, stk, prgm):
+        '''
+        Inspect.
+        '''
         stk.append(OS.inspect(stk.pop()))
     INSTRUCTIONS['\''] = inspect
 
@@ -339,6 +351,16 @@ def ost_instructions():
     for instr in '0123456789': INSTRUCTIONS[instr] = num
 
     def assign(self, stk, prgm):
+        '''
+        Saves a value to a variable. (Does not remove the value from the stack!)
+
+            >>> 42
+            42
+            >>> :a
+            42
+            >>> aaa
+            42 42 42 42
+        '''
         return OS.XSTATE.ASSIGN
     INSTRUCTIONS[':'] = assign
 
@@ -422,6 +444,9 @@ def ost_instructions():
     INSTRUCTIONS['?'] = question
 
     def roll(self, stk, prgm):
+        '''
+        Roll stack.
+        '''
         count = stk.pop()
         xs = stk.popn(abs(count))
         if count < 0:
@@ -433,6 +458,9 @@ def ost_instructions():
     INSTRUCTIONS['@'] = roll
 
     def leftbracket(self, stk, prgm):
+        '''
+        Array.
+        '''
         return OST.ARRAY
     INSTRUCTIONS['['] = leftbracket
 
@@ -447,10 +475,16 @@ def ost_instructions():
     INSTRUCTIONS['\\'] = swaptwo
 
     def rightbracket(self, stk, prgm):
+        '''
+        End array.
+        '''
         return -OST.ARRAY
     INSTRUCTIONS[']'] = rightbracket
 
     def bitxor(self, stk, prgm):
+        '''
+        Bitwise/setwise xor.
+        '''
         a, b = stk.popn(2)
         ptype = OS.typeof(OS.byprec([a, b])[0])
 
@@ -486,14 +520,23 @@ def ost_instructions():
     INSTRUCTIONS['_'] = underscore
 
     def backtick(self, stk, prgm):
+        '''
+        String.
+        '''
         return OST.STRING
     INSTRUCTIONS['`'] = backtick
 
     def letter_A(self, stk, prgm):
+        '''
+        Absolute value.
+        '''
         stk.append(abs(stk.pop()))
     INSTRUCTIONS['A'] = letter_A
 
     def letter_B(self, stk, prgm):
+        '''
+        all ur base r belong to us
+        '''
         a, b = stk.popn(2)
         at = OS.typeof(a)
         if at == OST.ARRAY:
@@ -518,10 +561,16 @@ def ost_instructions():
     INSTRUCTIONS['C'] = letter_C
 
     def letter_D(self, stk, prgm):
+        '''
+        Time since Unix epoch.
+        '''
         stk.append(time.time())
     INSTRUCTIONS['D'] = letter_D
 
     def letter_E(self, stk, prgm):
+        '''
+        Evaluate as Python code.
+        '''
         stk.append(eval(stk.pop()))
     INSTRUCTIONS['E'] = letter_E
 
@@ -560,6 +609,9 @@ def ost_instructions():
     INSTRUCTIONS['H'] = letter_H
 
     def letter_I(self, stk, prgm):
+        '''
+        If.
+        '''
         a, b, c = stk.popn(3)
         toRun = b if c else a
         if OS.typeof(toRun) == OST.BLOCK:
@@ -569,15 +621,24 @@ def ost_instructions():
     INSTRUCTIONS['I'] = letter_I
 
     def letter_M(self, stk, prgm):
+        '''
+        Regex match.
+        '''
         s, pattern = stk.popn(2)
         stk.append(re.findall(pattern, s))
     INSTRUCTIONS['M'] = letter_M
 
     def letter_P(self, stk, prgm):
+        '''
+        Print.
+        '''
         sys.stdout.write(OS.tostr(stk.pop()))
     INSTRUCTIONS['P'] = letter_P
 
     def letter_Q(self, stk, prgm):
+        '''
+        Quit the program.
+        '''
         return OS.XSTATE.EXIT
     INSTRUCTIONS['Q'] = letter_Q
 
@@ -592,6 +653,9 @@ def ost_instructions():
     INSTRUCTIONS['R'] = letter_R
 
     def letter_S(self, stk, prgm):
+        '''
+        Read from STDIN.
+        '''
         stk.append(sys.stdin.read())
     INSTRUCTIONS['S'] = letter_S
 
@@ -634,6 +698,9 @@ def ost_instructions():
     INSTRUCTIONS['W'] = letter_W
 
     def letter_X(self, stk, prgm):
+        '''
+        Regex replace.
+        '''
         s, pattern, repl = stk.popn(3)
         if OS.typeof(repl) == OST.BLOCK:
             def replFunc(m):
@@ -645,7 +712,18 @@ def ost_instructions():
             stk.append(re.sub(pattern, OS.tostr(repl), s))
     INSTRUCTIONS['X'] = letter_X
 
+    def letter_Y(self, stk, prgm):
+        '''
+        Transliterate.
+        '''
+        tstr, tfrom, tto = stk.popn(3)
+        stk.append(tstr.translate(str.maketrans(tfrom, tto)))
+    INSTRUCTIONS['Y'] = letter_Y
+
     def letter_Z(self, stk, prgm):
+        '''
+        Zip.
+        '''
         l = stk.pop()
         allStr = all(OS.typeof(x) == OST.STRING for x in l)
 
@@ -659,10 +737,16 @@ def ost_instructions():
     INSTRUCTIONS['Z'] = letter_Z
 
     def leftcurlybracket(self, stk, prgm):
+        '''
+        Block.
+        '''
         return OST.BLOCK
     INSTRUCTIONS['{'] = leftcurlybracket
 
     def bitor(self, stk, prgm):
+        '''
+        Bitwise/setwise or.
+        '''
         a, b = stk.popn(2)
         ptype = OS.typeof(OS.byprec([a, b])[0])
 
@@ -687,10 +771,16 @@ def ost_instructions():
     # this normally isn't called unless there are unmatched brackets
     # block parsing is done within Ostrich#run
     def rightcurlybracket(self, stk, prgm):
+        '''
+        End block.
+        '''
         return -OST.BLOCK
     INSTRUCTIONS['}'] = rightcurlybracket
 
     def tilde(self, stk, prgm):
+        '''
+        Dump array, execute block/string, or negate number.
+        '''
         x = stk.pop()
         xt = OS.typeof(x)
         if xt == OST.ARRAY:
