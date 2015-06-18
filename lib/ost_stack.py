@@ -65,6 +65,10 @@ class Stack(list):
     def byprec(xs):
         return sorted(xs, key=lambda x: OS.typeof(x), reverse=True)
 
+    # used for REPL
+    def clear(self):
+        del self[:]
+
 
 # to differentiate blocks and strings
 class Block(str): pass

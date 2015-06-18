@@ -30,7 +30,7 @@ def ost_repl(program):
         print(rtn)
         # L
         if repl_settings['autoclear']:
-            program.stack = []
+            program.stack.clear()
 
 def unknowncmd():
     def unknowncmd_inner(args):
