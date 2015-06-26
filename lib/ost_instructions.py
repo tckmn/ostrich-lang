@@ -628,6 +628,19 @@ def ost_instructions():
         stk.append(re.findall(pattern, s))
     INSTRUCTIONS['M'] = letter_M
 
+    def letter_O(self, stk, prgm):
+        '''
+        Ord for strings; that is, convert to ASCII value. Reverse for integers,
+        because letter C is already taken.
+        '''
+        x = stk.pop()
+        xt = OS.typeof(x)
+        if xt == OST.NUMBER:
+            stk.append(chr(x))
+        elif xt == OST.STRING:
+            stk.append(ord(x))
+    INSTRUCTIONS['O'] = letter_O
+
     def letter_P(self, stk, prgm):
         '''
         Print.
