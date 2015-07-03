@@ -625,7 +625,7 @@ def ost_instructions():
         Regex match.
         '''
         s, pattern = stk.popn(2)
-        stk.append(re.findall(pattern, s))
+        stk.append(list(map(list, re.findall(pattern, s))))
     INSTRUCTIONS['M'] = letter_M
 
     def letter_O(self, stk, prgm):
