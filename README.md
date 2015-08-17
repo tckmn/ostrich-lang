@@ -12,4 +12,4 @@ A list of instructions and what they do can be found in the `doc` directory.
 
 ## Name
 
-The name "Ostrich" comes from golf, in which it means a score of 5 under par (which is extremely rare, and has possibly never happened (?)).
+The name "Ostrich" comes from golf, in which it means a score of 5 under par (which has [never been achieved](https://en.wikipedia.org/wiki/Glossary_of_golf#O)).
